@@ -88,15 +88,15 @@ void Gameplay::movePiece(Board board[8][8], int fromNumber, int fromLetter, int 
 }
 
 int Gameplay::validateMoveLetter(char ch)const {
-	if (ch > 'g') {
-		ch = 'g';
+	if (ch > 'h') {
+		ch = 'h';
 	}
 	return ch - 'a';
 }
 
 int Gameplay::validateMoveNumber(char ch)const {
-	if (ch > '7') {
-		ch = '7';
+	if (ch > '8') {
+		ch = '8';
 	}
 	return ch - '1';
 }
