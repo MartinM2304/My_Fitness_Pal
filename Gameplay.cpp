@@ -118,7 +118,7 @@ bool Gameplay::validateMove(Board board[8][8], int fromLetter, int toLetter, int
 	}
 }
 
-bool Gameplay::validatePawnPositions(Board board[8][8], int fromNumber, int toNumber, int fromLetter, int toLetter, int rowDifference, int columnDifference, int currentPlayer) {
+bool Gameplay::validatePawnMove(Board board[8][8], int fromNumber,  int toNumber, int fromLetter, int toLetter, int rowDifference, int columnDifference, int currentPlayer) {
 	int startingRow = (currentPlayer == 1) ? 6 : 1;
 	int forwardDirection = (currentPlayer == 1) ? -1 : 1;
 	int enemyPlayer = (currentPlayer == 1) ? 2 : 1;
@@ -152,16 +152,8 @@ bool Gameplay::validatePawnPositions(Board board[8][8], int fromNumber, int toNu
 		movePiece(board, fromNumber, fromLetter, toNumber, toLetter);
 		return true;
 	}
-}
-
-bool Gameplay::validatePawnMove(Board board[8][8], int fromNumber,  int toNumber, int fromLetter, int toLetter, int rowDifference, int columnDifference, int currentPlayer) {
-	validatePawnPositions(board, fromNumber, toNumber, fromLetter, toLetter, rowDifference,columnDifference, currentPlayer);
-	if (currentPlayer == 1) {
-		return validatePawnMoveFirstPlayer(board, fromNumber, toNumber, fromLetter, toLetter,rowDifference,columnDifference);
-	}
-	else {
-		return validatePawnMoveSecondPlayer(board, fromNumber, toNumber, fromLetter, toLetter, rowDifference, columnDifference);
-	}
+	movePiece(board, fromNumber, fromLetter, toNumber, toLetter);
+	return true;
 }
 
 bool Gameplay::validateKingMove(Board board[8][8], int fromNumber, int toNumber, int fromLetter, int toLetter, int rowDifference, int columnDifference, int currentPlayer)
@@ -464,130 +456,22 @@ void Gameplay::processMove(String command, int currentPlayer)
 
 void Gameplay::PlayGame()
 {
-	Pawn wP1("Pawn", 1);
-	Pawn wP2("Pawn", 1);
-	Pawn wP3("Pawn", 1);
-	Pawn wP4("Pawn", 1);
-	Pawn wP5("Pawn", 1);
-	Pawn wP6("Pawn", 1);
-	Pawn wP7("Pawn", 1);
-	Pawn wP8("Pawn", 1);
-	Rook wR1("Rook", 1);
-	Rook wR2("Rook", 1);
-	Knight wN1("Knight", 1);
-	Knight wN2("Knight", 1);
-	Bishop wB1("Bishop", 1);
-	Bishop wB2("Bishop", 1);
-	Queen wQ("Queen", 1);
-	King wK("King", 1);
+	init();
 
-	Pawn bP1("Pawn", 2);
-	Pawn bP2("Pawn", 2);
-	Pawn bP3("Pawn", 2);
-	Pawn bP4("Pawn", 2);
-	Pawn bP5("Pawn", 2);
-	Pawn bP6("Pawn", 2);
-	Pawn bP7("Pawn", 2);
-	Pawn bP8("Pawn", 2);
-	Rook bR1("Rook", 2);
-	Rook bR2("Rook", 2);
-	Knight bN1("Knight", 2);
-	Knight bN2("Knight", 2);
-	Bishop bB1("Bishop", 2);
-	Bishop bB2("Bishop", 2);
-	Queen bQ("Queen", 2);
-	King bK("King", 2);
+	int currentPlayer = 2;
+	String command;
 
-	board[7][0].piece = &wR1;
-	board[7][1].piece = &wN1;
-	board[7][2].piece = &wB1;
-	board[7][3].piece = &wQ;
-	board[7][4].piece = &wK;
-	board[7][5].piece = &wB2;
-	board[7][6].piece = &wN2;
-	board[7][7].piece = &wR2;
-
-	board[6][0].piece = &wP1;
-	board[6][1].piece = &wP2;
-	board[6][2].piece = &wP3;
-	board[6][3].piece = &wP4;
-	board[6][4].piece = &wP5;
-	board[6][5].piece = &wP6;
-	board[6][6].piece = &wP7;
-	board[6][7].piece = &wP8;
-
-	board[0][0].piece = &bR1;
-	board[0][1].piece = &bN1;
-	board[0][2].piece = &bB1;
-	board[0][3].piece = &bQ;
-	board[0][4].piece = &bK;
-	board[0][5].piece = &bB2;
-	board[0][6].piece = &bN2;
-	board[0][7].piece = &bR2;
-
-	board[1][0].piece = &bP1;
-	board[1][1].piece = &bP2;
-	board[1][2].piece = &bP3;
-	board[1][3].piece = &bP4;
-	board[1][4].piece = &bP5;
-	board[1][5].piece = &bP6;
-	board[1][6].piece = &bP7;
-	board[1][7].piece = &bP8;
-
-	int currPlayer = 2; // since we change the current player in the while loop we declare it as 2 so it can become 1
-	String comand;
-
-	while (true)
-	{
-		//after every valid move we will change Current player
-		if (currPlayer == 1) {
-			currPlayer = 2;
-			//std::cout << "from 1 to 2";
-		}
-		else {
-			currPlayer = 1;
-			//std::cout << "from 2 to 1";
-		}
-
+	while (true) {
+		currentPlayer = (currentPlayer == 1) ? 2 : 1;
 		PrintBoard(board);
 
-		std::cout << std::endl;
-		std::cout << "It is Player " << currPlayer << " turn. Please enter your command:" << std::endl;
+		std::cout << "\nIt is Player " << currentPlayer << "'s turn. Please enter your command:\n";
+		std::cin >> command;
 
-		std::cin >> comand;
-		if (comand == "help") {
-			std::cout << "-----------------Help menu-----------------" << std::endl;
-			std::cout << "Possible commands: " << std::endl;
-			std::cout << "undo -> returns the game to the state before the last move." << std::endl;
-			std::cout << "exit -> exits the game." << std::endl;
-			std::cout << "move x1y1 x2y2 -> if possible, move the figure from position (x1, y1) to position (x2, y2)" << std::endl;
-			std::cout << "example move command ---> move d2 d4" << std::endl;
-			if (currPlayer == 1) {
-				currPlayer = 2;
-			}
-			else {
-				currPlayer = 1;
-			}
-		}
-		else if (comand == "undo") {
-			
-		}
-		else if (comand == "exit") {
-			break;
-		}
-		else {
-			while (!(isMoveCommandValid(comand)))
-			{
-				std::cin >> comand;
-			}
-			while (!(canMove(comand, board, currPlayer)) || (!(isMoveCommandValid(comand))))
-			{
-				std::cout << "Please enter your move again!" << std::endl;
-				std::cin >> comand;
-			}
-		}
+		handleCommand(command, currentPlayer);
+
 		if (isKingDead) {
-			std::cout << "Player " << currPlayer << " wins!" << std::endl;
+			std::cout << "Player " << currentPlayer << " wins!\n";
 			break;
 		}
 	}
