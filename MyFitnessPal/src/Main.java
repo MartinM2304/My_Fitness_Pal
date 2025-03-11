@@ -1,4 +1,4 @@
-import bg.sofia.uni.fmi.myfitnesspal.items.Controller;
+import bg.sofia.uni.fmi.myfitnesspal.Controller;
 
 import java.util.Scanner;
 

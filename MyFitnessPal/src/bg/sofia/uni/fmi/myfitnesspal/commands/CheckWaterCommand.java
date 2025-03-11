@@ -17,7 +17,7 @@ public class CheckWaterCommand implements Command{
     }
 
     @Override
-    public void execute(){
+    public Command execute(){
         System.out.println("When?");
         String stringDate=scanner.nextLine();
         LocalDate date= DateParser.parse(stringDate);
@@ -27,5 +27,6 @@ public class CheckWaterCommand implements Command{
             System.out.print(consumption);
             System.out.print(" ");
         }
+        return this;
     }
 }

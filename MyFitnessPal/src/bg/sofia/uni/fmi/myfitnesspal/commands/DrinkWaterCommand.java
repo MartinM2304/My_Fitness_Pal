@@ -17,7 +17,7 @@ public class DrinkWaterCommand implements Command{
     }
 
     @Override
-    public void execute(){
+    public Command execute(){
         System.out.println("When?");
         String stringDate=scanner.nextLine();
         LocalDate date= DateParser.parse(stringDate);
@@ -26,5 +26,6 @@ public class DrinkWaterCommand implements Command{
         int quantity=Integer.parseInt(stringQuantity);
 
         water.consumpt(date,quantity);
+        return this;
     }
 }
