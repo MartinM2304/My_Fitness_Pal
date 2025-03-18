@@ -25,8 +25,13 @@ public class CheckWaterCommand implements Command{
         List<Integer> consumptionForDate=water.getConsumptionForDate(date);
         for(int consumption:consumptionForDate){
             System.out.print(consumption);
-            System.out.print(" ");
+            System.out.print("\n");
         }
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "check water";
     }
 }

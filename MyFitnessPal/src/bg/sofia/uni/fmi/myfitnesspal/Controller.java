@@ -16,7 +16,7 @@ import java.util.Scanner;
 public class Controller {
     public static final String FILE_NAME="storage.txt";
     private  Map<String, Consumable> items=new HashMap<>();
-    private CommandValidator commandValidator=new CommandValidator();
+    //private CommandValidator commandValidator=new CommandValidator();
     private CommandFactory commandFactory;
     private final Scanner sc= new Scanner(System.in);
     private ItemSerializer serializer;
@@ -27,13 +27,11 @@ public class Controller {
     }
 
     public Command executeCommand(String command){
-        if(!commandValidator.isValidCommand(command)){
-            throw  new IllegalArgumentException("this is not a valid command");
-        }
         Command executedCommand= commandFactory.getCommand(command);
         if(executedCommand.isExitCommand()){
             serializer.saveData();
         }
+        executedCommand.execute();
         return executedCommand;
     }
 

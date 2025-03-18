@@ -22,10 +22,16 @@ public class DrinkWaterCommand implements Command{
         String stringDate=scanner.nextLine();
         LocalDate date= DateParser.parse(stringDate);
 
+        System.out.println("How much?");
         String stringQuantity=scanner.nextLine();
         int quantity=Integer.parseInt(stringQuantity);
 
         water.consumpt(date,quantity);
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "drink water";
     }
 }

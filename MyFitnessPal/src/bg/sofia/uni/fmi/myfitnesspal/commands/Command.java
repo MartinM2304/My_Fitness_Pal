@@ -6,4 +6,6 @@ public interface Command {
     default boolean isExitCommand(){
         return false;
     }
+
+//    String getName();
 }

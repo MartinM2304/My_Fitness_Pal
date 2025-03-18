@@ -54,4 +54,9 @@ public class CreateFoodCommand implements Command {
         System.out.println("Food added successfully!");
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "create food";
+    }
 }

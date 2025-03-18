@@ -4,11 +4,12 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class Consumable implements Item, Serializable {
-    protected Map<LocalDate, List<Integer>> consumptionLog;
+    protected Map<LocalDate, List<Integer>> consumptionLog=new HashMap<>();
 
     private void validate(LocalDate date,int quantityConsumed){
         if(date==null){

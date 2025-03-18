@@ -13,4 +13,9 @@ public class ExitCommand implements Command{
     public boolean isExitCommand(){
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "exit";
+    }
 }

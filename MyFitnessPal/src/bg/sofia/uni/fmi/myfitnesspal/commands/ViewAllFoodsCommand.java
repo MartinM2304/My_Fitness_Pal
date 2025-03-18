@@ -35,4 +35,9 @@ public class ViewAllFoodsCommand implements Command{
         }
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "view all foods";
+    }
 }
