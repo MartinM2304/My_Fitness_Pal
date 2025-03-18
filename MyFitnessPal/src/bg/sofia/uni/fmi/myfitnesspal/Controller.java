@@ -2,10 +2,9 @@ package bg.sofia.uni.fmi.myfitnesspal;
 
 import bg.sofia.uni.fmi.myfitnesspal.commands.Command;
 import bg.sofia.uni.fmi.myfitnesspal.commands.CommandFactory;
-import bg.sofia.uni.fmi.myfitnesspal.commands.CommandValidator;
 import bg.sofia.uni.fmi.myfitnesspal.items.Consumable;
 import bg.sofia.uni.fmi.myfitnesspal.items.Food;
-import bg.sofia.uni.fmi.myfitnesspal.items.ItemSerializer;
+import bg.sofia.uni.fmi.myfitnesspal.serializer.ItemSerializer;
 import bg.sofia.uni.fmi.myfitnesspal.items.Water;
 
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Controller {
-    public static final String FILE_NAME="storage.txt";
+    public static final String FILE_NAME="storage.json";
     private  Map<String, Consumable> items=new HashMap<>();
     //private CommandValidator commandValidator=new CommandValidator();
     private CommandFactory commandFactory;
@@ -36,10 +35,12 @@ public class Controller {
     }
 
     private void initController(){
-        items.put("water",new Water());
+        serializer=new ItemSerializer(FILE_NAME, new HashSet<>(items.values()));
+        serializer.readData();
+        //items.putIfAbsent("water",new Water());
+
 
         commandFactory=new CommandFactory(items,sc,this);
-        serializer=new ItemSerializer(FILE_NAME, new HashSet<>(items.values()));
     }
 
     public void addFood(Food food) {

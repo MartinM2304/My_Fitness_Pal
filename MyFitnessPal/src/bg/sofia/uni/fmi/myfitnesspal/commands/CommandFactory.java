@@ -23,10 +23,14 @@ public class CommandFactory {
         Command createFood = new CreateFoodCommand((Food) items.get("food"), scanner, controller);
         Command viewAllFood = new ViewAllFoodsCommand(controller);
 
+        Command exit = new ExitCommand();
+
         commands.put(drinkWater.toString(),drinkWater);
         commands.put(checkWater.toString(),checkWater);
         commands.put(createFood.toString(),createFood);
         commands.put(viewAllFood.toString(),viewAllFood);
+
+        commands.put(exit.toString(),exit);
 
         commandValidator=new CommandValidator(commands.keySet());
     }
