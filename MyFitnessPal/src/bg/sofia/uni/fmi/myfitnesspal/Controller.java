@@ -15,7 +15,8 @@ import java.util.Scanner;
 public class Controller {
     public static final String FILE_NAME="storage.json";
     private  Map<String, Consumable> items=new HashMap<>();
-    //private CommandValidator commandValidator=new CommandValidator();
+    private Map<Integer,String> foodIds = new HashMap<>();
+    int currentFoodId=0;
     private CommandFactory commandFactory;
     private final Scanner sc= new Scanner(System.in);
     private ItemSerializer serializer;
@@ -35,12 +36,13 @@ public class Controller {
     }
 
     private void initController(){
-        serializer=new ItemSerializer(FILE_NAME, new HashSet<>(items.values()));
-        serializer.readData();
-        //items.putIfAbsent("water",new Water());
+        serializer=new ItemSerializer(FILE_NAME,items);
+        if(! serializer.readData()){
+            System.out.println("No existing data loaded. Initializing new storage.");
+        }
 
-
-        commandFactory=new CommandFactory(items,sc,this);
+        items.putIfAbsent("water", new Water());
+        commandFactory = new CommandFactory(items, sc, this);
     }
 
     public void addFood(Food food) {
@@ -49,5 +51,23 @@ public class Controller {
 
     public Map<String,Consumable> getItems(){
         return items;
+    }
+
+    public Map<Integer,String> getFoodIds(){
+        return foodIds;
+    }
+
+    public int getCurrentFoodId(){
+        return currentFoodId;
+    }
+
+    public int updateCurrentFoodId(){
+        currentFoodId++;
+        return currentFoodId;
+    }
+
+    public int updateCurrentFoodId(int currentFoodId){
+        this.currentFoodId=currentFoodId;
+        return this.currentFoodId;
     }
 }

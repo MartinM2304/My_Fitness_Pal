@@ -6,12 +6,10 @@ import bg.sofia.uni.fmi.myfitnesspal.items.Food;
 import java.util.Scanner;
 
 public class CreateFoodCommand implements Command {
-    private final Food food;
     private final Scanner scanner;
     private final Controller controller;
 
     public CreateFoodCommand(Food food, Scanner scanner, Controller controller) {
-        this.food = food;
         this.scanner = scanner;
         this.controller = controller;
     }
@@ -52,6 +50,10 @@ public class CreateFoodCommand implements Command {
         controller.addFood(food);
 
         System.out.println("Food added successfully!");
+
+        int currentFoodId=controller.getCurrentFoodId();
+        controller.getFoodIds().put(currentFoodId,food.getName());
+        controller.updateCurrentFoodId();
         return this;
     }
 

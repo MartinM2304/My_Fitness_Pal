@@ -22,7 +22,13 @@ public class CheckWaterCommand implements Command{
         String stringDate=scanner.nextLine();
         LocalDate date= DateParser.parse(stringDate);
 
-        List<Integer> consumptionForDate=water.getConsumptionForDate(date);
+        List<Integer> consumptionForDate;
+        try {
+            consumptionForDate = water.getConsumptionForDate(date);
+        }catch (IllegalArgumentException e){
+            System.out.println("you didnt drink any water then");
+            return null;
+        }
         for(int consumption:consumptionForDate){
             System.out.print(consumption);
             System.out.print("\n");

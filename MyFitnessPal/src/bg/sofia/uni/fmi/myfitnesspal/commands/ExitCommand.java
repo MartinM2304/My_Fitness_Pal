@@ -4,8 +4,7 @@ public class ExitCommand implements Command{
 
     @Override
     public Command execute() {
-        System.out.println("Exiting the application...");
-        System.exit(0);
+        exitApplication();
         return this;
     }
 
@@ -17,5 +16,11 @@ public class ExitCommand implements Command{
     @Override
     public String toString() {
         return "exit";
+    }
+
+    //in order to be testable
+    protected void exitApplication() {
+        System.out.println("Exiting the application...");
+        System.exit(0);
     }
 }

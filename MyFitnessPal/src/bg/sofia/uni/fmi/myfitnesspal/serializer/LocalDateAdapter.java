@@ -1,9 +1,9 @@
 package bg.sofia.uni.fmi.myfitnesspal.serializer;
 
 import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

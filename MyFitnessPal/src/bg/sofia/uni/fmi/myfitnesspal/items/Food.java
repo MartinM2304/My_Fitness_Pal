@@ -21,6 +21,41 @@ public class Food extends Consumable {
         this.protein = builder.protein;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public int getServingSize() {
+        return servingSize;
+    }
+
+    public int getCalories() {
+        return calories;
+    }
+
+
+    @Override
+    public String toString() {
+        return String.format("%s (%dg; %d kcal; %.1fg, %.1fg, %.2fg)",
+                name, servingSize, calories, carbs, fat, protein);
+    }
+
+    public double getProtein() {
+        return protein;
+    }
+
+    public double getFat() {
+        return fat;
+    }
+
+    public double getCarbs() {
+        return carbs;
+    }
+
+    public int getServingsPerContainer() {
+        return servingsPerContainer;
+    }
+
     public static class Builder {
         private final String name;
         private int servingSize;
@@ -73,11 +108,5 @@ public class Food extends Consumable {
         public Food build() {
             return new Food(this);
         }
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s (%dg; %d kcal; %.1fg, %.1fg, %.2fg)",
-                name, servingSize, calories, carbs, fat, protein);
     }
 }
