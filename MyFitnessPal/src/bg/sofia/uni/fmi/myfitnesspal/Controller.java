@@ -13,31 +13,37 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Controller {
-    public static final String FILE_NAME="storage.json";
-    private  Map<String, Consumable> items=new HashMap<>();
-    private Map<Integer,String> foodIds = new HashMap<>();
-    int currentFoodId=0;
+    public static final String FILE_NAME = "storage.json";
+    private Map<String, Consumable> items = new HashMap<>();
+    private Map<Integer, String> foodIds = new HashMap<>();
+    int currentFoodId = 0;
     private CommandFactory commandFactory;
-    private final Scanner sc= new Scanner(System.in);
+    private final Scanner sc = new Scanner(System.in);
     private ItemSerializer serializer;
 
 
-    public Controller(){
+    public Controller() {
         initController();
     }
 
-    public Command executeCommand(String command){
-        Command executedCommand= commandFactory.getCommand(command);
-        if(executedCommand.isExitCommand()){
+    public Controller(ItemSerializer serializer, CommandFactory commandFactory) {
+        this.serializer = serializer;
+        this.commandFactory = commandFactory;
+        this.items.putIfAbsent("water", new Water());
+    }
+
+    public Command executeCommand(String command) {
+        Command executedCommand = commandFactory.getCommand(command);
+        if (executedCommand.isExitCommand()) {
             serializer.saveData();
         }
         executedCommand.execute();
         return executedCommand;
     }
 
-    private void initController(){
-        serializer=new ItemSerializer(FILE_NAME,items);
-        if(! serializer.readData()){
+    private void initController() {
+        serializer = new ItemSerializer(FILE_NAME, items);
+        if (!serializer.readData()) {
             System.out.println("No existing data loaded. Initializing new storage.");
         }
 
@@ -49,25 +55,25 @@ public class Controller {
         items.put(food.toString(), food);
     }
 
-    public Map<String,Consumable> getItems(){
+    public Map<String, Consumable> getItems() {
         return items;
     }
 
-    public Map<Integer,String> getFoodIds(){
+    public Map<Integer, String> getFoodIds() {
         return foodIds;
     }
 
-    public int getCurrentFoodId(){
+    public int getCurrentFoodId() {
         return currentFoodId;
     }
 
-    public int updateCurrentFoodId(){
+    public int updateCurrentFoodId() {
         currentFoodId++;
         return currentFoodId;
     }
 
-    public int updateCurrentFoodId(int currentFoodId){
-        this.currentFoodId=currentFoodId;
+    public int updateCurrentFoodId(int currentFoodId) {
+        this.currentFoodId = currentFoodId;
         return this.currentFoodId;
     }
 }

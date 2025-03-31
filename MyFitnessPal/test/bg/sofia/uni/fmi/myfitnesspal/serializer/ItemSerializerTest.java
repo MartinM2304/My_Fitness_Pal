@@ -3,87 +3,67 @@ package bg.sofia.uni.fmi.myfitnesspal.serializer;
 import bg.sofia.uni.fmi.myfitnesspal.items.Consumable;
 import bg.sofia.uni.fmi.myfitnesspal.items.Food;
 import bg.sofia.uni.fmi.myfitnesspal.items.Water;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 class ItemSerializerTest {
+
     private ItemSerializer serializer;
     private Map<String, Consumable> items;
-    private File fileMock;
-    private BufferedWriter writerMock;
-    private BufferedReader readerMock;
+    private Path tempFile;
 
     @BeforeEach
     void setUp() throws IOException {
         items = new HashMap<>();
-        serializer = new ItemSerializer("test.json", items);
-        fileMock = mock(File.class);
-        writerMock = mock(BufferedWriter.class);
-        readerMock = mock(BufferedReader.class);
-
-        serializer = Mockito.spy(new ItemSerializer("test.json", items));
+        tempFile = Files.createTempFile("test", ".json");
+        serializer = new ItemSerializer(tempFile.toString(), items);
     }
 
     @Test
-    void testSaveData_Success() throws IOException {
-        Food food = new Food.Builder("Apple").servingSize(100).calories(52).build();
-        items.put("apple", food);
-        Gson gsonMock = mock(Gson.class);
-        when(gsonMock.toJson(items)).thenReturn("{\"apple\":\"mocked\"}");
+    void testSaveData_Success() {
+        items.put("apple", new Food.Builder("Apple").servingSize(100).calories(52).build());
 
-        try (var bufferedWriter = Mockito.mockStatic(BufferedWriter.class)) {
-            bufferedWriter.when(() -> new BufferedWriter(any(FileWriter.class))).thenReturn(writerMock);
-            Mockito.doReturn(true).when(serializer).saveData();
+        boolean result = serializer.saveData();
 
-            boolean result = serializer.saveData();
-
-            assertTrue(result);
-            verify(writerMock).write(anyString());
-        }
+        assertTrue(result);
+        assertTrue(Files.exists(tempFile));
     }
 
     @Test
     void testSaveData_IOException() throws IOException {
-        doThrow(new IOException("Write failed")).when(writerMock).write(anyString());
-        try (var bufferedWriter = Mockito.mockStatic(BufferedWriter.class)) {
-            bufferedWriter.when(() -> new BufferedWriter(any(FileWriter.class))).thenReturn(writerMock);
+        Files.delete(tempFile);
+        Files.createDirectory(tempFile);
 
-            boolean result = serializer.saveData();
+        boolean result = serializer.saveData();
 
-            assertFalse(result);
-        }
+        assertFalse(result);
     }
 
     @Test
     void testReadData_Success() throws IOException {
-        when(fileMock.exists()).thenReturn(true);
-        when(fileMock.length()).thenReturn(100L);
-        when(readerMock.readLine()).thenReturn("{\"apple\":{\"type\":\"Food\",\"name\":\"Apple\"}}").thenReturn(null);
-        try (var bufferedReader = Mockito.mockStatic(BufferedReader.class)) {
-            bufferedReader.when(() -> new BufferedReader(any(FileReader.class))).thenReturn(readerMock);
+        items.put("apple", new Food.Builder("Apple").servingSize(100).calories(52).build());
+        serializer.saveData();
 
-            boolean result = serializer.readData();
+        items.clear();
+        boolean result = serializer.readData();
 
-            assertTrue(result);
-            assertEquals(1, items.size());
-            assertTrue(items.get("apple") instanceof Food);
-        }
+        assertTrue(result);
+        assertEquals(1, items.size());
+        assertTrue(items.containsKey("apple"));
+        assertTrue(items.get("apple") instanceof Food);
     }
 
     @Test
     void testReadData_FileNotExists() {
-        when(fileMock.exists()).thenReturn(false);
-
         boolean result = serializer.readData();
 
         assertFalse(result);
@@ -91,9 +71,8 @@ class ItemSerializerTest {
     }
 
     @Test
-    void testReadData_EmptyFile() {
-        when(fileMock.exists()).thenReturn(true);
-        when(fileMock.length()).thenReturn(0L);
+    void testReadData_EmptyFile() throws IOException {
+        Files.write(tempFile, "".getBytes());
 
         boolean result = serializer.readData();
 
@@ -103,31 +82,42 @@ class ItemSerializerTest {
 
     @Test
     void testReadData_EmptyJson() throws IOException {
-        when(fileMock.exists()).thenReturn(true);
-        when(fileMock.length()).thenReturn(100L);
-        when(readerMock.readLine()).thenReturn("{}").thenReturn(null);
-        try (var bufferedReader = Mockito.mockStatic(BufferedReader.class)) {
-            bufferedReader.when(() -> new BufferedReader(any(FileReader.class))).thenReturn(readerMock);
+        Files.write(tempFile, "{}".getBytes());
 
-            boolean result = serializer.readData();
+        boolean result = serializer.readData();
 
-            assertFalse(result);
-            assertTrue(items.isEmpty());
-        }
+        assertFalse(result);
+        assertTrue(items.isEmpty());
     }
 
     @Test
     void testReadData_IOException() throws IOException {
-        when(fileMock.exists()).thenReturn(true);
-        when(fileMock.length()).thenReturn(100L);
-        when(readerMock.readLine()).thenThrow(new IOException("Read failed"));
-        try (var bufferedReader = Mockito.mockStatic(BufferedReader.class)) {
-            bufferedReader.when(() -> new BufferedReader(any(FileReader.class))).thenReturn(readerMock);
+        Files.write(tempFile, "not a json".getBytes());
+        tempFile.toFile().setReadOnly();
 
-            boolean result = serializer.readData();
+        boolean result = serializer.readData();
 
-            assertFalse(result);
-        }
+        assertFalse(result);
+    }
+
+    @Test
+    void testReadData_NullLoadedItems() throws IOException {
+        Files.write(tempFile, "{invalid json}".getBytes());
+
+        boolean result = serializer.readData();
+
+        assertFalse(result);
+        assertTrue(items.isEmpty());
+    }
+
+    @Test
+    void testReadData_GenericException() throws IOException {
+        Files.write(tempFile, "{\"apple\": {\"type\": \"InvalidType\"}}".getBytes());
+
+        boolean result = serializer.readData();
+
+        assertFalse(result);
+        assertTrue(items.isEmpty());
     }
 
     @Test
