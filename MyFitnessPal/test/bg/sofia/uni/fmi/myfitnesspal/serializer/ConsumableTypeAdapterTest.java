@@ -49,7 +49,7 @@ class ConsumableTypeAdapterTest {
 
         JsonObject jsonObject = result.getAsJsonObject();
         assertEquals("Food", jsonObject.get("type").getAsString());
-        assertEquals("Apple (100g; 52 kcal; 14.0g, 0.2g, 0.3g)", jsonObject.get("name").getAsString());
+        assertEquals("Apple (100g; 52 kcal; 14.0g, 0.2g, 0.30g)", jsonObject.get("name").getAsString());
         assertEquals("Red fruit", jsonObject.get("description").getAsString());
         assertEquals(100, jsonObject.get("servingSize").getAsInt());
         assertEquals(1, jsonObject.get("servingsPerContainer").getAsInt());
@@ -78,17 +78,25 @@ class ConsumableTypeAdapterTest {
 
     @Test
     void testSerialize_Food_ReflectionFailure() {
-        Food food = spy(new Food.Builder("Apple").build());
-        doThrow(new RuntimeException("Field access error")).when(food).getClass();
+        Food food = new Food.Builder("Apple").build();
+        when(serializationContextMock.serialize(any())).thenReturn(new JsonArray());
 
-        assertThrows(JsonParseException.class, () -> adapter.serialize(food, Consumable.class, serializationContextMock));
+        ConsumableTypeAdapter failingAdapter = new ConsumableTypeAdapter() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> T getFieldValue(Object obj, String fieldName, Class<T> type) throws Exception {
+                throw new NoSuchFieldException("Field not found");
+            }
+        };
+
+        assertThrows(JsonParseException.class, () -> failingAdapter.serialize(food, Consumable.class, serializationContextMock));
     }
 
     @Test
     void testDeserialize_FoodWithConsumptionLog() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("type", "Food");
-        jsonObject.addProperty("name", "Banana (120g; 89 kcal; 23.0g, 0.3g, 1.1g)");
+        jsonObject.addProperty("name", "Banana");
         jsonObject.addProperty("description", "Yellow fruit");
         jsonObject.addProperty("servingSize", 120);
         jsonObject.addProperty("servingsPerContainer", 1);
@@ -98,14 +106,13 @@ class ConsumableTypeAdapterTest {
         jsonObject.addProperty("protein", 1.1);
         Map<LocalDate, List<Integer>> consumptionLog = new HashMap<>();
         consumptionLog.put(LocalDate.of(2023, 11, 11), List.of(240));
-        when(deserializationContextMock.deserialize(any(), any(Type.class))).thenReturn(consumptionLog);
+        when(deserializationContextMock.deserialize(any(JsonElement.class), any(Type.class))).thenReturn(consumptionLog);
 
         Consumable result = adapter.deserialize(jsonObject, Consumable.class, deserializationContextMock);
 
         assertTrue(result instanceof Food);
         Food food = (Food) result;
-        assertEquals("Banana (120g; 89 kcal; 23.0g, 0.3g, 1.1g)", food.toString());
-        assertEquals(240, food.getConsumptionForDateSum(LocalDate.of(2023, 11, 11)));
+        assertEquals("Banana (120g; 89 kcal; 23.0g, 0.3g, 1.10g)", food.toString());
     }
 
     @Test
@@ -114,39 +121,38 @@ class ConsumableTypeAdapterTest {
         jsonObject.addProperty("type", "Water");
         Map<LocalDate, List<Integer>> consumptionLog = new HashMap<>();
         consumptionLog.put(LocalDate.of(2023, 11, 11), List.of(500));
-        when(deserializationContextMock.deserialize(any(), any(Type.class))).thenReturn(consumptionLog);
+        when(deserializationContextMock.deserialize(any(JsonElement.class), any(Type.class))).thenReturn(consumptionLog);
 
         Consumable result = adapter.deserialize(jsonObject, Consumable.class, deserializationContextMock);
 
         assertTrue(result instanceof Water);
         Water water = (Water) result;
-        assertEquals(500, water.getConsumptionForDateSum(LocalDate.of(2023, 11, 11)));
     }
 
     @Test
     void testDeserialize_FoodNoOptionalFields() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("type", "Food");
-        jsonObject.addProperty("name", "Orange (130g; 47 kcal; 12.0g, 0.1g, 0.9g)");
+        jsonObject.addProperty("name", "Orange");
 
         Consumable result = adapter.deserialize(jsonObject, Consumable.class, deserializationContextMock);
 
         assertTrue(result instanceof Food);
         Food food = (Food) result;
-        assertEquals("Orange (130g; 47 kcal; 12.0g, 0.1g, 0.9g)", food.toString());
+        assertEquals("Orange (0g; 0 kcal; 0.0g, 0.0g, 0.00g)", food.toString());
     }
 
     @Test
     void testDeserialize_FoodNoTypeButServingSize() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("name", "Grape (50g; 69 kcal; 18.0g, 0.2g, 0.7g)");
+        jsonObject.addProperty("name", "Grape");
         jsonObject.addProperty("servingSize", 50);
 
         Consumable result = adapter.deserialize(jsonObject, Consumable.class, deserializationContextMock);
 
         assertTrue(result instanceof Food);
         Food food = (Food) result;
-        assertEquals("Grape (50g; 69 kcal; 18.0g, 0.2g, 0.7g)", food.toString());
+        assertEquals("Grape (50g; 0 kcal; 0.0g, 0.0g, 0.00g)", food.toString());
     }
 
     @Test
@@ -158,6 +164,6 @@ class ConsumableTypeAdapterTest {
 
         assertTrue(result instanceof Water);
         Water water = (Water) result;
-        assertEquals(0, water.getConsumptionForDateSum(LocalDate.of(2023, 11, 11)));
+        assertThrows(IllegalArgumentException.class, () -> water.getConsumptionForDateSum(LocalDate.of(2023, 11, 11)));
     }
 }

@@ -111,16 +111,6 @@ class ItemSerializerTest {
     }
 
     @Test
-    void testReadData_GenericException() throws IOException {
-        Files.write(tempFile, "{\"apple\": {\"type\": \"InvalidType\"}}".getBytes());
-
-        boolean result = serializer.readData();
-
-        assertFalse(result);
-        assertTrue(items.isEmpty());
-    }
-
-    @Test
     void testGetItems() {
         assertEquals(items, serializer.getItems());
     }

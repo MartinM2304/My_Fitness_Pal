@@ -23,12 +23,12 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
 
             try {
                 jsonObject.addProperty("description", getFieldValue(food, "description", String.class));
-                jsonObject.addProperty("servingSize", getFieldValue(food, "servingSize", int.class));
-                jsonObject.addProperty("servingsPerContainer", getFieldValue(food, "servingsPerContainer", int.class));
-                jsonObject.addProperty("calories", getFieldValue(food, "calories", int.class));
-                jsonObject.addProperty("carbs", getFieldValue(food, "carbs", double.class));
-                jsonObject.addProperty("fat", getFieldValue(food, "fat", double.class));
-                jsonObject.addProperty("protein", getFieldValue(food, "protein", double.class));
+                jsonObject.addProperty("servingSize", getFieldValue(food, "servingSize", Integer.class));
+                jsonObject.addProperty("servingsPerContainer", getFieldValue(food, "servingsPerContainer", Integer.class));
+                jsonObject.addProperty("calories", getFieldValue(food, "calories", Integer.class));
+                jsonObject.addProperty("carbs", getFieldValue(food, "carbs", Double.class));
+                jsonObject.addProperty("fat", getFieldValue(food, "fat", Double.class));
+                jsonObject.addProperty("protein", getFieldValue(food, "protein", Double.class));
             } catch (Exception e) {
                 throw new JsonParseException("Error serializing Food fields", e);
             }
@@ -101,10 +101,19 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
         }
     }
 
-    private <T> T getFieldValue(Object obj, String fieldName, Class<T> type) throws Exception {
+    protected  <T> T getFieldValue(Object obj, String fieldName, Class<T> type) throws Exception {
         java.lang.reflect.Field field = obj.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         Object value = field.get(obj);
+        if (type == Integer.class && value instanceof Integer) {
+            return type.cast(value);
+        } else if (type == int.class && value instanceof Integer) {
+            return (T) Integer.valueOf((Integer) value);
+        } else if (type == Double.class && value instanceof Double) {
+            return type.cast(value);
+        } else if (type == double.class && value instanceof Double) {
+            return (T) Double.valueOf((Double) value);
+        }
         return type.cast(value);
     }
 }
