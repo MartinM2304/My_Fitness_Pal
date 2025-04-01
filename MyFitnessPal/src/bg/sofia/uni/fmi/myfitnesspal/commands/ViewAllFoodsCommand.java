@@ -6,7 +6,7 @@ import bg.sofia.uni.fmi.myfitnesspal.items.Food;
 
 import java.util.Map;
 
-public class ViewAllFoodsCommand implements Command{
+public class ViewAllFoodsCommand implements Command {
 
     private Controller controller;
 
@@ -29,8 +29,6 @@ public class ViewAllFoodsCommand implements Command{
 
         if (!hasFood) {
             System.out.println("No foods added yet.");
-
-
             return this;
         }
         return this;

@@ -23,24 +23,24 @@ public class CommandFactory {
         Command createFood = new CreateFoodCommand((Food) items.get("food"), scanner, controller);
         Command viewAllFood = new ViewAllFoodsCommand(controller);
 
-        Command logFood = new LogFoodCommand(controller,scanner);
+        Command logFood = new LogFoodCommand(controller, scanner);
 
         Command exit = new ExitCommand();
 
-        commands.put(drinkWater.toString(),drinkWater);
-        commands.put(checkWater.toString(),checkWater);
-        commands.put(createFood.toString(),createFood);
-        commands.put(viewAllFood.toString(),viewAllFood);
-        commands.put(logFood.toString(),logFood);
+        commands.put(drinkWater.toString(), drinkWater);
+        commands.put(checkWater.toString(), checkWater);
+        commands.put(createFood.toString(), createFood);
+        commands.put(viewAllFood.toString(), viewAllFood);
+        commands.put(logFood.toString(), logFood);
 
-        commands.put(exit.toString(),exit);
+        commands.put(exit.toString(), exit);
 
-        commandValidator=new CommandValidator(commands.keySet());
+        commandValidator = new CommandValidator(commands.keySet());
     }
 
     public Command getCommand(String commandName) {
-        if(!commandValidator.isValidCommand(commandName)){
-            throw  new IllegalArgumentException("this is not a valid command");
+        if (!commandValidator.isValidCommand(commandName)) {
+            throw new IllegalArgumentException("this is not a valid command");
         }
         String normalizedCommand = commandName.trim().toLowerCase();
         return commands.getOrDefault(normalizedCommand, () -> null);

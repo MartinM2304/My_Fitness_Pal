@@ -9,19 +9,19 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class LocalDateAdapter {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public static class Serializer implements JsonSerializer<LocalDate> {
         @Override
         public JsonElement serialize(LocalDate src, Type typeOfSrc, com.google.gson.JsonSerializationContext context) {
-            return new JsonPrimitive(src.format(formatter));
+            return new JsonPrimitive(src.format(FORMATTER));
         }
     }
 
     public static class Deserializer implements JsonDeserializer<LocalDate> {
         @Override
         public LocalDate deserialize(JsonElement json, Type typeOfT, com.google.gson.JsonDeserializationContext context) {
-            return LocalDate.parse(json.getAsString(), formatter);
+            return LocalDate.parse(json.getAsString(), FORMATTER);
         }
     }
 }

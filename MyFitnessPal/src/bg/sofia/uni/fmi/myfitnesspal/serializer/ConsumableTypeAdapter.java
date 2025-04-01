@@ -24,7 +24,8 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
             try {
                 jsonObject.addProperty("description", getFieldValue(food, "description", String.class));
                 jsonObject.addProperty("servingSize", getFieldValue(food, "servingSize", Integer.class));
-                jsonObject.addProperty("servingsPerContainer", getFieldValue(food, "servingsPerContainer", Integer.class));
+                jsonObject.addProperty("servingsPerContainer"
+                        , getFieldValue(food, "servingsPerContainer", Integer.class));
                 jsonObject.addProperty("calories", getFieldValue(food, "calories", Integer.class));
                 jsonObject.addProperty("carbs", getFieldValue(food, "carbs", Double.class));
                 jsonObject.addProperty("fat", getFieldValue(food, "fat", Double.class));
@@ -42,13 +43,13 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
     }
 
     @Override
-    public Consumable deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+    public Consumable deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+            throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
         String type = jsonObject.has("type") ? jsonObject.get("type").getAsString() : null;
 
         if ("Food".equals(type) || jsonObject.has("servingSize")) {
             Food.Builder builder = new Food.Builder(jsonObject.get("name").getAsString());
-
             if (jsonObject.has("description")) {
                 builder.description(jsonObject.get("description").getAsString());
             }
@@ -70,12 +71,13 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
             if (jsonObject.has("protein")) {
                 builder.protein(jsonObject.get("protein").getAsDouble());
             }
-
             Food food = builder.build();
 
             if (jsonObject.has("consumptionLog")) {
-                Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, java.util.List<Integer>>>() {}.getType();
-                Map<LocalDate, java.util.List<Integer>> consumptionLog = context.deserialize(jsonObject.get("consumptionLog"), logType);
+                Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, java.util.List<Integer>>>() {
+                }.getType();
+                Map<LocalDate, java.util.List<Integer>> consumptionLog = context
+                        .deserialize(jsonObject.get("consumptionLog"), logType);
                 for (Map.Entry<LocalDate, java.util.List<Integer>> entry : consumptionLog.entrySet()) {
                     LocalDate date = entry.getKey();
                     for (Integer amount : entry.getValue()) {
@@ -88,8 +90,10 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
             Water water = new Water();
 
             if (jsonObject.has("consumptionLog")) {
-                Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, java.util.List<Integer>>>() {}.getType();
-                Map<LocalDate, java.util.List<Integer>> consumptionLog = context.deserialize(jsonObject.get("consumptionLog"), logType);
+                Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, java.util.List<Integer>>>() {
+                }.getType();
+                Map<LocalDate, java.util.List<Integer>> consumptionLog = context
+                        .deserialize(jsonObject.get("consumptionLog"), logType);
                 for (Map.Entry<LocalDate, java.util.List<Integer>> entry : consumptionLog.entrySet()) {
                     LocalDate date = entry.getKey();
                     for (Integer amount : entry.getValue()) {
@@ -101,7 +105,7 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
         }
     }
 
-    protected  <T> T getFieldValue(Object obj, String fieldName, Class<T> type) throws Exception {
+    protected <T> T getFieldValue(Object obj, String fieldName, Class<T> type) throws Exception {
         java.lang.reflect.Field field = obj.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         Object value = field.get(obj);

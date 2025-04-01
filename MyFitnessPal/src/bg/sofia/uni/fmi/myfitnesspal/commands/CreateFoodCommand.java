@@ -51,8 +51,8 @@ public class CreateFoodCommand implements Command {
 
         System.out.println("Food added successfully!");
 
-        int currentFoodId=controller.getCurrentFoodId();
-        controller.getFoodIds().put(currentFoodId,food.getName());
+        int currentFoodId = controller.getCurrentFoodId();
+        controller.getFoodIds().put(currentFoodId, food.getName());
         controller.updateCurrentFoodId();
         return this;
     }

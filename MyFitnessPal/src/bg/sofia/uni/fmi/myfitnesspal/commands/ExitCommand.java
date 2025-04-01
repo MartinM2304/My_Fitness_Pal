@@ -1,6 +1,6 @@
 package bg.sofia.uni.fmi.myfitnesspal.commands;
 
-public class ExitCommand implements Command{
+public class ExitCommand implements Command {
 
     @Override
     public Command execute() {
@@ -9,7 +9,7 @@ public class ExitCommand implements Command{
     }
 
     @Override
-    public boolean isExitCommand(){
+    public boolean isExitCommand() {
         return true;
     }
 

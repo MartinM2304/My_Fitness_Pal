@@ -8,7 +8,6 @@ import bg.sofia.uni.fmi.myfitnesspal.serializer.ItemSerializer;
 import bg.sofia.uni.fmi.myfitnesspal.items.Water;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -20,7 +19,6 @@ public class Controller {
     private CommandFactory commandFactory;
     private final Scanner sc = new Scanner(System.in);
     private ItemSerializer serializer;
-
 
     public Controller() {
         initController();

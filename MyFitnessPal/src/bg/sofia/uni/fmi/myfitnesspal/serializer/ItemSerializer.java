@@ -8,7 +8,6 @@ import com.google.gson.reflect.TypeToken;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Map;
 
 public class ItemSerializer {
@@ -65,7 +64,8 @@ public class ItemSerializer {
                 return false;
             }
 
-            Type mapType = new TypeToken<Map<String, Consumable>>() {}.getType();
+            Type mapType = new TypeToken<Map<String, Consumable>>() {
+            }.getType();
             Map<String, Consumable> loadedItems = gson.fromJson(json, mapType);
 
             if (loadedItems == null) {
