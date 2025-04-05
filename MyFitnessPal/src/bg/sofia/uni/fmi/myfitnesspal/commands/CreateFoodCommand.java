@@ -9,7 +9,7 @@ public class CreateFoodCommand implements Command {
     private final Scanner scanner;
     private final Controller controller;
 
-    public CreateFoodCommand(Food food, Scanner scanner, Controller controller) {
+    public CreateFoodCommand(Scanner scanner, Controller controller) {
         this.scanner = scanner;
         this.controller = controller;
     }
@@ -17,43 +17,41 @@ public class CreateFoodCommand implements Command {
     @Override
     public Command execute() {
         System.out.println("Name:");
-        String name = scanner.nextLine();
-
+        String name = scanner.nextLine().trim();
         Food.Builder builder = new Food.Builder(name);
 
         System.out.println("Description (optional):");
-        String description = scanner.nextLine();
+        String description = scanner.nextLine().trim();
         if (!description.isBlank()) {
             builder.description(description);
         }
 
-        System.out.println("Serving Size (g):");
-        builder.servingSize(Integer.parseInt(scanner.nextLine()));
+        try {
+            System.out.println("Serving Size (g):");
+            builder.servingSize(Integer.parseInt(scanner.nextLine().trim()));
 
-        System.out.println("Servings per container:");
-        builder.servingsPerContainer(Integer.parseInt(scanner.nextLine()));
+            System.out.println("Servings per container:");
+            builder.servingsPerContainer(Integer.parseInt(scanner.nextLine().trim()));
 
-        System.out.println("Amount per serving:");
-        System.out.println("Calories (kcal):");
-        builder.calories(Integer.parseInt(scanner.nextLine()));
+            System.out.println("Amount per serving:");
+            System.out.println("Calories (kcal):");
+            builder.calories(Integer.parseInt(scanner.nextLine().trim()));
 
-        System.out.println("Carbs (g):");
-        builder.carbs(Double.parseDouble(scanner.nextLine()));
+            System.out.println("Carbs (g):");
+            builder.carbs(Double.parseDouble(scanner.nextLine().trim()));
 
-        System.out.println("Fat (g):");
-        builder.fat(Double.parseDouble(scanner.nextLine()));
+            System.out.println("Fat (g):");
+            builder.fat(Double.parseDouble(scanner.nextLine().trim()));
 
-        System.out.println("Protein (g):");
-        builder.protein(Double.parseDouble(scanner.nextLine()));
-
+            System.out.println("Protein (g):");
+            builder.protein(Double.parseDouble(scanner.nextLine().trim()));
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input. Please use numbers where required.");
+            return null;
+        }
         Food food = builder.build();
         controller.addFood(food);
-
         System.out.println("Food added successfully!");
-
-        int currentFoodId = controller.getCurrentFoodId();
-        controller.getFoodIds().put(currentFoodId, food.getName());
-        controller.updateCurrentFoodId();
         return this;
     }
 

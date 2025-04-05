@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.myfitnesspal.Controller;
 import bg.sofia.uni.fmi.myfitnesspal.date.DateParser;
 import bg.sofia.uni.fmi.myfitnesspal.items.Consumable;
 import bg.sofia.uni.fmi.myfitnesspal.items.Food;
+import bg.sofia.uni.fmi.myfitnesspal.items.MealTime;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -27,16 +28,28 @@ public class LogFoodCommand implements Command {
         try {
             date = DateParser.parse(dateStr);
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid date format.");
+            System.out.println("Invalid date format. Use: YYYY-MM-DD");
             return null;
         }
 
         System.out.println("When (meal):");
         String mealStr = scanner.nextLine().trim();
-        if (!mealStr.equalsIgnoreCase("Breakfast") && !mealStr.equalsIgnoreCase("Lunch") &&
-                !mealStr.equalsIgnoreCase("Snacks") && !mealStr.equalsIgnoreCase("Dinner")) {
+        MealTime mealTime;
+        try {
+            mealTime = MealTime.fromString(mealStr);
+        } catch (IllegalArgumentException e) {
             System.out.println("Invalid meal time. Use: Breakfast, Lunch, Snacks, Dinner");
             return null;
+        }
+
+        System.out.println("Available foods:");
+        if (foodIds.isEmpty()) {
+            System.out.println("No foods available.");
+            return null;
+        }
+        for (Map.Entry<Integer, String> entry : foodIds.entrySet()) {
+            Consumable food = controller.getItems().get(entry.getValue());
+            System.out.println(entry.getKey() + ". " + food);
         }
 
         System.out.println("Which food (food id):");
@@ -59,18 +72,22 @@ public class LogFoodCommand implements Command {
             System.out.println("Invalid food item.");
             return null;
         }
-        System.out.println(foodId + ". " + food);
 
         System.out.println("(Either)\nNumber of serving(s):");
         String servingsInput = scanner.nextLine().trim();
         int quantity;
+        int servings;
         if (!servingsInput.isEmpty()) {
             try {
-                int servings = Integer.parseInt(servingsInput);
+                servings = Integer.parseInt(servingsInput);
+                if (servings <= 0) {
+                    System.out.println("Number of servings must be positive.");
+                    return null;
+                }
                 quantity = servings * food.getServingSize();
                 System.out.printf("%d X %s (%s)\n", servings, food, calculateNutrition(food, quantity));
             } catch (NumberFormatException e) {
-                System.out.println("Invalid number of servings.");
+                System.out.println("Invalid number of servings. Use a number.");
                 return null;
             }
         } else {
@@ -78,12 +95,20 @@ public class LogFoodCommand implements Command {
             String sizeInput = scanner.nextLine().trim();
             try {
                 quantity = Integer.parseInt(sizeInput);
+                if (quantity <= 0) {
+                    System.out.println("Serving size must be positive.");
+                    return null;
+                }
+                servings = quantity / food.getServingSize(); // Приблизително
                 System.out.printf("%dg X %s (%s)\n", quantity, food, calculateNutrition(food, quantity));
             } catch (NumberFormatException e) {
-                System.out.println("Invalid serving size.");
+                System.out.println("Invalid serving size. Use a number.");
                 return null;
             }
         }
+
+        food.consumpt(date, servings, mealTime);
+        System.out.println("Food consumption logged successfully.");
         return this;
     }
 
@@ -97,5 +122,10 @@ public class LogFoodCommand implements Command {
     @Override
     public String toString() {
         return "log food";
+    }
+
+    @Override
+    public boolean isExitCommand() {
+        return false;
     }
 }

@@ -7,12 +7,6 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Controller controller = new Controller();
-        Scanner scanner = new Scanner(System.in);
-
-        while (true) {
-            System.out.print("> ");
-            String command = scanner.nextLine();
-            controller.executeCommand(command);
-        }
+        controller.start();
     }
 }

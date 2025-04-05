@@ -1,12 +1,16 @@
 package bg.sofia.uni.fmi.myfitnesspal.serializer;
 
-import bg.sofia.uni.fmi.myfitnesspal.items.Consumable;
-import bg.sofia.uni.fmi.myfitnesspal.items.Food;
-import bg.sofia.uni.fmi.myfitnesspal.items.Water;
+import bg.sofia.uni.fmi.myfitnesspal.items.*;
+import bg.sofia.uni.fmi.myfitnesspal.items.tracker.ConsumptionEntry;
+import bg.sofia.uni.fmi.myfitnesspal.items.tracker.FoodConsumptionEntry;
+import bg.sofia.uni.fmi.myfitnesspal.items.tracker.WaterConsumptionEntry;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDeserializer<Consumable> {
@@ -15,73 +19,79 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
     public JsonElement serialize(Consumable src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject jsonObject = new JsonObject();
 
-        if (src instanceof Food) {
-            Food food = (Food) src;
+        if (src instanceof Food food) {
             jsonObject.addProperty("type", "Food");
-            jsonObject.addProperty("name", food.toString());
-            jsonObject.add("consumptionLog", context.serialize(food.getConsumptionLog()));
+            jsonObject.addProperty("name", food.getName());
+            jsonObject.addProperty("description", food.getDescription());
+            jsonObject.addProperty("servingSize", food.getServingSize());
+            jsonObject.addProperty("servingsPerContainer", food.getServingsPerContainer());
+            jsonObject.addProperty("calories", food.getCalories());
+            jsonObject.addProperty("carbs", food.getCarbs());
+            jsonObject.addProperty("fat", food.getFat());
+            jsonObject.addProperty("protein", food.getProtein());
 
-            try {
-                jsonObject.addProperty("description", getFieldValue(food, "description", String.class));
-                jsonObject.addProperty("servingSize", getFieldValue(food, "servingSize", Integer.class));
-                jsonObject.addProperty("servingsPerContainer"
-                        , getFieldValue(food, "servingsPerContainer", Integer.class));
-                jsonObject.addProperty("calories", getFieldValue(food, "calories", Integer.class));
-                jsonObject.addProperty("carbs", getFieldValue(food, "carbs", Double.class));
-                jsonObject.addProperty("fat", getFieldValue(food, "fat", Double.class));
-                jsonObject.addProperty("protein", getFieldValue(food, "protein", Double.class));
-            } catch (Exception e) {
-                throw new JsonParseException("Error serializing Food fields", e);
+            JsonObject logObject = new JsonObject();
+            for (Map.Entry<LocalDate, List<ConsumptionEntry>> entry : food.getConsumptionLog().entrySet()) {
+                JsonArray entriesArray = new JsonArray();
+                for (ConsumptionEntry ce : entry.getValue()) {
+                    if (ce instanceof FoodConsumptionEntry fce) {
+                        JsonObject entryObject = new JsonObject();
+                        entryObject.addProperty("servings", fce.getServings());
+                        entryObject.addProperty("mealTime", fce.getMealTime().toString());
+                        entriesArray.add(entryObject);
+                    }
+                }
+                logObject.add(entry.getKey().toString(), entriesArray);
             }
-        } else if (src instanceof Water) {
-            Water water = (Water) src;
+            jsonObject.add("consumptionLog", logObject);
+
+        } else if (src instanceof Water water) {
             jsonObject.addProperty("type", "Water");
-            jsonObject.add("consumptionLog", context.serialize(water.getConsumptionLog()));
+
+            JsonObject logObject = new JsonObject();
+            for (Map.Entry<LocalDate, List<ConsumptionEntry>> entry : water.getConsumptionLog().entrySet()) {
+                JsonArray entriesArray = new JsonArray();
+                for (ConsumptionEntry ce : entry.getValue()) {
+                    if (ce instanceof WaterConsumptionEntry wce) {
+                        JsonObject entryObject = new JsonObject();
+                        entryObject.addProperty("quantity", wce.getQuantity());
+                        entriesArray.add(entryObject);
+                    }
+                }
+                logObject.add(entry.getKey().toString(), entriesArray);
+            }
+            jsonObject.add("consumptionLog", logObject);
         }
 
         return jsonObject;
     }
 
     @Override
-    public Consumable deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-            throws JsonParseException {
+    public Consumable deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         JsonObject jsonObject = json.getAsJsonObject();
         String type = jsonObject.has("type") ? jsonObject.get("type").getAsString() : null;
 
         if ("Food".equals(type) || jsonObject.has("servingSize")) {
             Food.Builder builder = new Food.Builder(jsonObject.get("name").getAsString());
-            if (jsonObject.has("description")) {
-                builder.description(jsonObject.get("description").getAsString());
-            }
-            if (jsonObject.has("servingSize")) {
-                builder.servingSize(jsonObject.get("servingSize").getAsInt());
-            }
-            if (jsonObject.has("servingsPerContainer")) {
-                builder.servingsPerContainer(jsonObject.get("servingsPerContainer").getAsInt());
-            }
-            if (jsonObject.has("calories")) {
-                builder.calories(jsonObject.get("calories").getAsInt());
-            }
-            if (jsonObject.has("carbs")) {
-                builder.carbs(jsonObject.get("carbs").getAsDouble());
-            }
-            if (jsonObject.has("fat")) {
-                builder.fat(jsonObject.get("fat").getAsDouble());
-            }
-            if (jsonObject.has("protein")) {
-                builder.protein(jsonObject.get("protein").getAsDouble());
-            }
+            builder.description(jsonObject.has("description") ? jsonObject.get("description").getAsString() : "");
+            builder.servingSize(jsonObject.get("servingSize").getAsInt());
+            builder.servingsPerContainer(jsonObject.get("servingsPerContainer").getAsInt());
+            builder.calories(jsonObject.get("calories").getAsInt());
+            builder.carbs(jsonObject.get("carbs").getAsDouble());
+            builder.fat(jsonObject.get("fat").getAsDouble());
+            builder.protein(jsonObject.get("protein").getAsDouble());
             Food food = builder.build();
 
             if (jsonObject.has("consumptionLog")) {
-                Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, java.util.List<Integer>>>() {
-                }.getType();
-                Map<LocalDate, java.util.List<Integer>> consumptionLog = context
-                        .deserialize(jsonObject.get("consumptionLog"), logType);
-                for (Map.Entry<LocalDate, java.util.List<Integer>> entry : consumptionLog.entrySet()) {
-                    LocalDate date = entry.getKey();
-                    for (Integer amount : entry.getValue()) {
-                        food.consumpt(date, amount);
+                JsonObject logObject = jsonObject.get("consumptionLog").getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : logObject.entrySet()) {
+                    LocalDate date = LocalDate.parse(entry.getKey());
+                    JsonArray entriesArray = entry.getValue().getAsJsonArray();
+                    for (JsonElement element : entriesArray) {
+                        JsonObject entryObject = element.getAsJsonObject();
+                        int servings = entryObject.get("servings").getAsInt();
+                        MealTime mealTime = MealTime.fromString(entryObject.get("mealTime").getAsString());
+                        food.consumpt(date, servings, mealTime);
                     }
                 }
             }
@@ -90,34 +100,18 @@ public class ConsumableTypeAdapter implements JsonSerializer<Consumable>, JsonDe
             Water water = new Water();
 
             if (jsonObject.has("consumptionLog")) {
-                Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, java.util.List<Integer>>>() {
-                }.getType();
-                Map<LocalDate, java.util.List<Integer>> consumptionLog = context
-                        .deserialize(jsonObject.get("consumptionLog"), logType);
-                for (Map.Entry<LocalDate, java.util.List<Integer>> entry : consumptionLog.entrySet()) {
-                    LocalDate date = entry.getKey();
-                    for (Integer amount : entry.getValue()) {
-                        water.consumpt(date, amount);
+                JsonObject logObject = jsonObject.get("consumptionLog").getAsJsonObject();
+                for (Map.Entry<String, JsonElement> entry : logObject.entrySet()) {
+                    LocalDate date = LocalDate.parse(entry.getKey());
+                    JsonArray entriesArray = entry.getValue().getAsJsonArray();
+                    for (JsonElement element : entriesArray) {
+                        JsonObject entryObject = element.getAsJsonObject();
+                        int quantity = entryObject.get("quantity").getAsInt();
+                        water.drink(date, quantity);
                     }
                 }
             }
             return water;
         }
-    }
-
-    protected <T> T getFieldValue(Object obj, String fieldName, Class<T> type) throws Exception {
-        java.lang.reflect.Field field = obj.getClass().getDeclaredField(fieldName);
-        field.setAccessible(true);
-        Object value = field.get(obj);
-        if (type == Integer.class && value instanceof Integer) {
-            return type.cast(value);
-        } else if (type == int.class && value instanceof Integer) {
-            return (T) Integer.valueOf((Integer) value);
-        } else if (type == Double.class && value instanceof Double) {
-            return type.cast(value);
-        } else if (type == double.class && value instanceof Double) {
-            return (T) Double.valueOf((Double) value);
-        }
-        return type.cast(value);
     }
 }

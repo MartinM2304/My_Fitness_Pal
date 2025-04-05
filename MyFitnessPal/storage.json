@@ -1,19 +1,32 @@
 {
-  "vafla (1g; 1 kcal; 1.0g, 1.0g, 1.00g)": {
-    "name": "vafla (1g; 1 kcal; 1.0g, 1.0g, 1.00g)",
-    "description": "boro",
-    "servingSize": 1,
+  "vafla (111g; 100 kcal; 100.0g, 100.0g, 1.00g)": {
+    "name": "vafla",
+    "description": "sladko",
+    "servingSize": 111,
     "servingsPerContainer": 1,
-    "calories": 1,
-    "carbs": 1.0,
-    "fat": 1.0,
+    "calories": 100,
+    "carbs": 100.0,
+    "fat": 100.0,
     "protein": 1.0,
-    "consumptionLog": {}
+    "consumptionLog": {
+      "1111-11-11": [
+        {
+          "servings": 1,
+          "mealTime": "BREAKFAST"
+        },
+        {
+          "servings": 1,
+          "mealTime": "BREAKFAST"
+        }
+      ]
+    }
   },
   "water": {
     "consumptionLog": {
       "1111-11-11": [
-        111
+        {
+          "quantity": 100
+        }
       ]
     }
   }

@@ -1,7 +1,9 @@
 package bg.sofia.uni.fmi.myfitnesspal.commands;
 
 import bg.sofia.uni.fmi.myfitnesspal.date.DateParser;
+import bg.sofia.uni.fmi.myfitnesspal.items.tracker.ConsumptionEntry;
 import bg.sofia.uni.fmi.myfitnesspal.items.Water;
+import bg.sofia.uni.fmi.myfitnesspal.items.tracker.WaterConsumptionEntry;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,18 +22,28 @@ public class CheckWaterCommand implements Command {
     public Command execute() {
         System.out.println("When?");
         String stringDate = scanner.nextLine();
-        LocalDate date = DateParser.parse(stringDate);
+        LocalDate date;
+        try {
+            date = DateParser.parse(stringDate);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid date format. Use: YYYY-MM-DD");
+            return null;
+        }
 
-        List<Integer> consumptionForDate;
+        List<ConsumptionEntry> consumptionForDate;
         try {
             consumptionForDate = water.getConsumptionForDate(date);
         } catch (IllegalArgumentException e) {
-            System.out.println("you didnt drink any water then");
+            System.out.println("You didn't drink any water then.");
             return null;
         }
-        for (int consumption : consumptionForDate) {
-            System.out.print(consumption);
-            System.out.print("\n");
+
+        for (ConsumptionEntry consumption : consumptionForDate) {
+            if (consumption instanceof WaterConsumptionEntry waterEntry) {
+                System.out.println(waterEntry.getQuantity() + " ml");
+            } else {
+                System.out.println("Unexpected consumption entry type for water.");
+            }
         }
         return this;
     }
@@ -39,5 +51,10 @@ public class CheckWaterCommand implements Command {
     @Override
     public String toString() {
         return "check water";
+    }
+
+    @Override
+    public boolean isExitCommand() {
+        return false; // Добавено, ако Command интерфейсът го изисква
     }
 }

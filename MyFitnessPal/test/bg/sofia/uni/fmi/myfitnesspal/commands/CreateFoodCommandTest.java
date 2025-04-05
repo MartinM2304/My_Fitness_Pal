@@ -22,7 +22,7 @@ class CreateFoodCommandTest {
     void setUp() {
         scannerMock = mock(Scanner.class);
         controllerMock = mock(Controller.class);
-        createFoodCommand = new CreateFoodCommand(null, scannerMock, controllerMock);
+        createFoodCommand = new CreateFoodCommand(scannerMock, controllerMock);
         when(controllerMock.getFoodIds()).thenReturn(new HashMap<>());
         when(controllerMock.getCurrentFoodId()).thenReturn(0);
     }
