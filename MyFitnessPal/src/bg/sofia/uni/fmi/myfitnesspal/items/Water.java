@@ -2,13 +2,9 @@ package bg.sofia.uni.fmi.myfitnesspal.items;
 
 import bg.sofia.uni.fmi.myfitnesspal.items.tracker.ConsumptionEntry;
 import bg.sofia.uni.fmi.myfitnesspal.items.tracker.WaterConsumptionEntry;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import bg.sofia.uni.fmi.myfitnesspal.serializer.visitor.ItemVisitor;
 
-import java.lang.reflect.Type;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 public class Water extends Consumable {
 
@@ -37,24 +33,7 @@ public class Water extends Consumable {
     }
 
     @Override
-    public JsonElement serialize(com.google.gson.JsonSerializationContext context) {
-        JsonObject json = new JsonObject();
-        json.addProperty("type", "Water");
-        json.add("consumptionLog", context.serialize(consumptionLog));
-        return json;
-    }
-
-    @Override
-    public void deserialize(JsonObject json, com.google.gson.JsonDeserializationContext context) {
-        if (!json.has("consumptionLog")) return;
-        Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, List<ConsumptionEntry>>>() {}.getType();
-        Map<LocalDate, List<ConsumptionEntry>> log = context.deserialize(json.get("consumptionLog"), logType);
-        for (Map.Entry<LocalDate, List<ConsumptionEntry>> entry : log.entrySet()) {
-            for (ConsumptionEntry ce : entry.getValue()) {
-                if (ce instanceof WaterConsumptionEntry wce) {
-                    drink(entry.getKey(), wce.getQuantity());
-                }
-            }
-        }
+    public void accept(ItemVisitor visitor) {
+        visitor.visitWater(this);
     }
 }

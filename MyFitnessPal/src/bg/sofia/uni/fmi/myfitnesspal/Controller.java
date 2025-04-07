@@ -27,7 +27,8 @@ public class Controller {
         initController();
     }
 
-    public Controller(ItemSerializer serializer, CommandFactory commandFactory) {
+    public Controller(ItemSerializer serializer,
+                      CommandFactory commandFactory) {
         this.serializer = serializer;
         this.commandFactory = commandFactory;
         this.items.putIfAbsent("water", new Water());
@@ -43,18 +44,27 @@ public class Controller {
     }
 
     private void initController() {
-        serializer = new ItemSerializer(FILE_NAME, items);
+        serializer = new ItemSerializer(FILE_NAME, items, foodIds, this);
         if (!serializer.readData()) {
-            System.out.println("No existing data loaded. Initializing new storage.");
+            System.out.println(
+                    "No existing data loaded. Initializing new storage.");
         }
 
         items.putIfAbsent("water", new Water());
+        if (items.isEmpty() ||
+                (items.size() == 1 && items.containsKey("water"))) {
+            fillFoodIDs();
+            fillMealIDs();
+        }
         commandFactory = new CommandFactory(items, sc, this);
-        fillFoodIDs();
     }
 
     public void addFood(Food food) {
         items.put(food.toString(), food);
+        int newFoodId = updateCurrentFoodId();
+        foodIds.put(newFoodId, food.getName());
+        System.out.println(
+                "Added food with ID: " + newFoodId + " -> " + food.getName());
     }
 
     public void addMeal(Meal menu) {
@@ -79,11 +89,23 @@ public class Controller {
         return currentFoodId;
     }
 
-    public int getCurrentMealId() { return currentMealId; }
+    public int getCurrentMealId() {
+        return currentMealId;
+    }
 
     public int updateCurrentFoodId() {
         currentFoodId++;
         return currentFoodId;
+    }
+
+    public int setCurrentFoodId(int currentFoodId) {
+        this.currentFoodId = currentFoodId;
+        return this.currentFoodId;
+    }
+
+    public int setCurrentMealId(int currentMealId) {
+        this.currentMealId = currentMealId;
+        return this.currentMealId;
     }
 
     public int updateCurrentFoodId(int currentFoodId) {
@@ -97,8 +119,13 @@ public class Controller {
         while (true) {
             System.out.print("> ");
             String command = scanner.nextLine();
-            executeCommand(command);
+            try {
+                executeCommand(command);
+            } catch (IllegalArgumentException e) {
+                System.out.println("wrong command try another");
+            }
         }
+
     }
 
     private Map<Integer, String> fillFoodIDs() {
@@ -106,7 +133,7 @@ public class Controller {
         for (Map.Entry<String, Consumable> entry : items.entrySet()) {
             if (entry.getValue() instanceof Food) {
                 currentFoodId++;
-                foodIds.put(currentFoodId, entry.getKey());
+                foodIds.put(currentFoodId, ((Food) entry.getValue()).getName());
             }
         }
         return foodIds;
@@ -114,6 +141,7 @@ public class Controller {
 
     private Map<Integer, String> fillMealIDs() {
         currentMealId = 0;
+        mealIds.clear();
         for (Map.Entry<String, Consumable> entry : items.entrySet()) {
             if (entry.getValue() instanceof Meal) {
                 currentMealId++;

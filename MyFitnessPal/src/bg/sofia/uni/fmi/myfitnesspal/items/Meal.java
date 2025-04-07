@@ -2,11 +2,12 @@ package bg.sofia.uni.fmi.myfitnesspal.items;
 
 import bg.sofia.uni.fmi.myfitnesspal.items.tracker.ConsumptionEntry;
 import bg.sofia.uni.fmi.myfitnesspal.items.Food;
+import bg.sofia.uni.fmi.myfitnesspal.serializer.visitor.ItemVisitor;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Meal extends Consumable{
+public class Meal extends Consumable {
     private String name;
     private String description;
     private int servings;
@@ -16,16 +17,16 @@ public class Meal extends Consumable{
         this.name = name;
     }
 
-    public Meal addFood(Food food){
+    public Meal addFood(Food food) {
         foods.add(food);
         return this;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public List<Food> getFoods(){
+    public List<Food> getFoods() {
         return foods;
     }
 
@@ -45,4 +46,8 @@ public class Meal extends Consumable{
     }
 
 
+    @Override
+    public void accept(ItemVisitor visitor) {
+        visitor.visitMeal(this);
+    }
 }

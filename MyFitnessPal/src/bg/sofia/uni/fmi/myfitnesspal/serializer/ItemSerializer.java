@@ -1,88 +1,131 @@
 package bg.sofia.uni.fmi.myfitnesspal.serializer;
 
+import bg.sofia.uni.fmi.myfitnesspal.Controller;
 import bg.sofia.uni.fmi.myfitnesspal.items.Consumable;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import bg.sofia.uni.fmi.myfitnesspal.items.Food;
+import bg.sofia.uni.fmi.myfitnesspal.items.Meal;
+import bg.sofia.uni.fmi.myfitnesspal.serializer.strategy.SerializationStrategy;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import java.io.*;
-import java.lang.reflect.Type;
-import java.time.LocalDate;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
 
 public class ItemSerializer {
     private final String fileName;
     private final Map<String, Consumable> items;
+    private final Map<Integer, String> foodIds;
+    private final SerializationStrategy strategy;
+    private final Controller controller;
 
-    public ItemSerializer(String fileName, Map<String, Consumable> items) {
+    public ItemSerializer(String fileName, Map<String, Consumable> items,
+                          Map<Integer, String> foodIds, Controller controller) {
         this.fileName = fileName;
         this.items = items;
+        this.foodIds = foodIds;
+        this.strategy = SerializationFactory.createStrategy("json", foodIds);
+        this.controller = controller;
     }
 
     public boolean saveData() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
-            Gson gson = new GsonBuilder()
-                    .setPrettyPrinting()
-                    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter.Serializer())
-                    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter.Deserializer())
-                    .registerTypeAdapter(Consumable.class, new ConsumableTypeAdapter())
-                    .create();
-
-            String json = gson.toJson(items);
-            writer.write(json);
-            System.out.println("Data saved: " + json);
+        try {
+            strategy.serialize(items, fileName);
+            System.out.println("Data saved to " + fileName);
             return true;
-        } catch (IOException ioException) {
-            ioException.printStackTrace();
+        } catch (RuntimeException e) {
+            System.err.println("Error saving data: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
 
     public boolean readData() {
-        File file = new File(fileName);
-        if (!file.exists() || file.length() == 0) {
-            System.out.println("No existing data file found or file is empty.");
-            return false;
-        }
-
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter.Serializer())
-                    .registerTypeAdapter(LocalDate.class, new LocalDateAdapter.Deserializer())
-                    .registerTypeAdapter(Consumable.class, new ConsumableTypeAdapter())
-                    .create();
-
-            StringBuilder jsonBuilder = new StringBuilder();
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                jsonBuilder.append(line);
-            }
-
-            String json = jsonBuilder.toString().trim();
-            if (json.isEmpty() || json.equals("{}")) {
-                System.out.println("JSON file is empty or contains only {}.");
-                return false;
-            }
-
-            Type mapType = new TypeToken<Map<String, Consumable>>() {
-            }.getType();
-            Map<String, Consumable> loadedItems = gson.fromJson(json, mapType);
-
-            if (loadedItems == null) {
-                System.out.println("Failed to parse JSON.");
+        try {
+            Map<String, Consumable> loadedItems =
+                    strategy.deserialize(fileName);
+            if (loadedItems.isEmpty()) {
+                System.out.println("No existing data loaded.");
                 return false;
             }
             items.clear();
             items.putAll(loadedItems);
+            populateFoodIdsAndMealIds();
+            populateMealFoods();
             System.out.println("Loaded items: " + items);
             return true;
-        } catch (IOException io) {
-            io.printStackTrace();
-            return false;
-        } catch (Exception e) {
-            System.err.println("Error parsing JSON: " + e.getMessage());
+        } catch (RuntimeException e) {
+            System.err.println("Error loading data: " + e.getMessage());
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private void populateFoodIdsAndMealIds() {
+        try (FileReader reader = new FileReader(fileName)) {
+            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+            foodIds.clear();
+            int maxFoodId = 0;
+            int maxMealId = 0;
+
+            for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
+                JsonObject itemJson = entry.getValue().getAsJsonObject();
+                String type = itemJson.has("type") ?
+                        itemJson.get("type").getAsString() : null;
+
+                if ("Food".equals(type)) {
+                    int foodId = itemJson.get("foodId").getAsInt();
+                    String foodName = itemJson.get("name").getAsString();
+                    foodIds.put(foodId, foodName);
+                    maxFoodId = Math.max(maxFoodId, foodId);
+                } else if ("Meal".equals(type)) {
+                    String mealName = itemJson.get("name").getAsString();
+                    maxMealId++;
+                    items.values().stream()
+                            .filter(Meal.class::isInstance)
+                            .map(Meal.class::cast)
+                            .filter(m -> m.getName().equals(mealName))
+                            .findFirst()
+                            .ifPresent(meal -> {
+                            });
+                }
+            }
+            controller.setCurrentFoodId(maxFoodId);
+            controller.setCurrentMealId(maxMealId);
+        } catch (IOException e) {
+            System.err.println(
+                    "Error populating foodIds and mealIds: " + e.getMessage());
+        }
+    }
+
+    private void populateMealFoods() {
+        try (FileReader reader = new FileReader(fileName)) {
+            JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+            items.values().stream()
+                    .filter(Meal.class::isInstance)
+                    .map(Meal.class::cast)
+                    .forEach(meal -> {
+                        meal.getFoods().clear();
+                        JsonObject mealJson =
+                                json.get(meal.getName()).getAsJsonObject();
+                        if (mealJson != null && mealJson.has("foodIds")) {
+                            JsonArray foodIdsArray =
+                                    mealJson.get("foodIds").getAsJsonArray();
+                            foodIdsArray.forEach(foodId -> {
+                                int id = foodId.getAsInt();
+                                String foodKey = foodIds.get(id);
+                                Consumable foodItem = items.get(foodKey);
+                                if (foodItem instanceof Food f) {
+                                    meal.addFood(f);
+                                }
+                            });
+                        }
+                    });
+        } catch (IOException e) {
+            System.err.println(
+                    "Error populating meal foods: " + e.getMessage());
         }
     }
 

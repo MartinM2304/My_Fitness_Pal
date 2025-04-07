@@ -6,15 +6,14 @@ public class FoodConsumptionEntry extends ConsumptionEntry {
     private final int servings;
     private final MealTime mealTime;
 
-    public FoodConsumptionEntry(int servings, MealTime mealTime, int servingSize) {
+    public FoodConsumptionEntry(int servings, MealTime mealTime) {
         this.servings = servings;
         this.mealTime = mealTime;
-        //this.servingSize = servingSize;
     }
 
     @Override
     public int getQuantity() {
-        return servings ;//* servingSize;
+        return servings;
     }
 
     public int getServings() {
@@ -27,6 +26,7 @@ public class FoodConsumptionEntry extends ConsumptionEntry {
 
     @Override
     public String toString() {
-        return String.format("%d servings (%d g) at %s", servings, getQuantity(), mealTime.toString());
+        return String.format("%d servings (%d g) at %s", servings,
+                getQuantity(), mealTime.toString());
     }
 }

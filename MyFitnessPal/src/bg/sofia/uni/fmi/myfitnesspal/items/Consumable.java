@@ -1,6 +1,7 @@
 package bg.sofia.uni.fmi.myfitnesspal.items;
 
 import bg.sofia.uni.fmi.myfitnesspal.items.tracker.ConsumptionEntry;
+import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
 import java.time.LocalDate;

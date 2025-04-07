@@ -1,33 +1,45 @@
 {
-  "vafla (111g; 100 kcal; 100.0g, 100.0g, 1.00g)": {
-    "name": "vafla",
-    "description": "sladko",
-    "servingSize": 111,
+  "kafe (1g; 1 kcal; 1.0g, 1.0g, 1.00g)": {
+    "type": "Food",
+    "foodId": 1,
+    "name": "kafe",
+    "description": "1",
+    "servingSize": 1,
     "servingsPerContainer": 1,
-    "calories": 100,
-    "carbs": 100.0,
-    "fat": 100.0,
+    "calories": 1,
+    "carbs": 1.0,
+    "fat": 1.0,
     "protein": 1.0,
-    "consumptionLog": {
-      "1111-11-11": [
-        {
-          "servings": 1,
-          "mealTime": "BREAKFAST"
-        },
-        {
-          "servings": 1,
-          "mealTime": "BREAKFAST"
-        }
-      ]
-    }
+    "consumptionLog": {}
+  },
+  "boza (1g; 1 kcal; 1.0g, 1.0g, 1.00g)": {
+    "type": "Food",
+    "foodId": 2,
+    "name": "boza",
+    "description": "1",
+    "servingSize": 1,
+    "servingsPerContainer": 1,
+    "calories": 1,
+    "carbs": 1.0,
+    "fat": 1.0,
+    "protein": 1.0,
+    "consumptionLog": {}
+  },
+  "banica (1g; 1 kcal; 1.0g, 1.0g, 1.00g)": {
+    "type": "Food",
+    "foodId": 3,
+    "name": "banica",
+    "description": "1",
+    "servingSize": 1,
+    "servingsPerContainer": 1,
+    "calories": 1,
+    "carbs": 1.0,
+    "fat": 1.0,
+    "protein": 1.0,
+    "consumptionLog": {}
   },
   "water": {
-    "consumptionLog": {
-      "1111-11-11": [
-        {
-          "quantity": 100
-        }
-      ]
-    }
+    "type": "Water",
+    "consumptionLog": {}
   }
 }

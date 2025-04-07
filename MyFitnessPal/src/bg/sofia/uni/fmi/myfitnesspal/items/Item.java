@@ -1,9 +1,7 @@
 package bg.sofia.uni.fmi.myfitnesspal.items;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import bg.sofia.uni.fmi.myfitnesspal.serializer.visitor.Visitable;
 
-public interface Item {
+public interface Item extends Visitable {
 
 }
