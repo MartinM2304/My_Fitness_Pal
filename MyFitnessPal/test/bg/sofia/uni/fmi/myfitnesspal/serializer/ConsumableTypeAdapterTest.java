@@ -47,7 +47,7 @@ class ConsumableTypeAdapterTest {
                 .protein(0.3)
                 .build();
         LocalDate date = LocalDate.of(2023, 11, 11);
-        food.consumpt(date, 2, MealTime.BREAKFAST); // Updated signature
+        food.consumpt(date, 2, MealTime.BREAKFAST);
         Map<LocalDate, List<ConsumptionEntry>> consumptionLog = food.getConsumptionLog();
         JsonElement logJson = new JsonArray();
         when(serializationContextMock.serialize(consumptionLog)).thenReturn(logJson);
@@ -73,7 +73,7 @@ class ConsumableTypeAdapterTest {
     void testSerialize_Water_Success() {
         Water water = new Water();
         LocalDate date = LocalDate.of(2023, 11, 11);
-        water.drink(date, 500); // Assuming this is the method
+        water.drink(date, 500);
         Map<LocalDate, List<ConsumptionEntry>> consumptionLog = water.getConsumptionLog();
         JsonElement logJson = new JsonArray();
         when(serializationContextMock.serialize(consumptionLog)).thenReturn(logJson);

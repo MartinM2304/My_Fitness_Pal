@@ -78,35 +78,6 @@ public class Food extends Consumable {
         return servingsPerContainer;
     }
 
-    //    @Override
-//    public JsonElement getJsonElement(com.google.gson.JsonSerializationContext context) {
-//        JsonObject json = new JsonObject();
-//        json.addProperty("type", "Food");
-//        json.addProperty("name", name);
-//        json.addProperty("description", description);
-//        json.addProperty("servingSize", servingSize);
-//        json.addProperty("servingsPerContainer", servingsPerContainer);
-//        json.addProperty("calories", calories);
-//        json.addProperty("carbs", carbs);
-//        json.addProperty("fat", fat);
-//        json.addProperty("protein", protein);
-//        json.add("consumptionLog", context.serialize(consumptionLog));
-//        return json;
-//    }
-//
-//    @Override
-//    public void deserialize(JsonObject json, com.google.gson.JsonDeserializationContext context) {
-//        if (!json.has("consumptionLog")) return;
-//        Type logType = new com.google.gson.reflect.TypeToken<Map<LocalDate, List<ConsumptionEntry>>>() {}.getType();
-//        Map<LocalDate, List<ConsumptionEntry>> log = context.deserialize(json.get("consumptionLog"), logType);
-//        for (Map.Entry<LocalDate, List<ConsumptionEntry>> entry : log.entrySet()) {
-//            for (ConsumptionEntry ce : entry.getValue()) {
-//                if (ce instanceof FoodConsumptionEntry fce) {
-//                    consumpt(entry.getKey(), fce.getServings(), fce.getMealTime());
-//                }
-//            }
-//        }
-//    }
     @Override
     public void accept(ItemVisitor visitor) {
         visitor.visitFood(this);

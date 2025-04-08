@@ -110,7 +110,7 @@ class ConsumptionEntryTypeAdapterTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("type", "FoodConsumption");
         jsonObject.addProperty("servings", 1);
-        jsonObject.addProperty("mealTime", "Lunch"); // Assuming fromString handles this
+        jsonObject.addProperty("mealTime", "Lunch");
 
         ConsumptionEntry result = adapter.deserialize(jsonObject, ConsumptionEntry.class, deserializationContextMock);
 

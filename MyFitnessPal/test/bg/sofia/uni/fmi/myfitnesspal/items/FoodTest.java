@@ -46,8 +46,8 @@ class FoodTest {
     void testGetConsumptionForDateSum_MultipleEntries() {
         Food food = new Food.Builder("Apple").servingSize(100).calories(52).carbs(14.0).fat(0.2).protein(0.3).build();
         LocalDate date = LocalDate.of(2023, 11, 11);
-        food.consumpt(date, 100);
-        food.consumpt(date, 50);
+        food.consumpt(date, 100, MealTime.BREAKFAST);
+        food.consumpt(date, 50, MealTime.LUNCH);
 
         assertEquals(150, food.getConsumptionForDateSum(date));
     }

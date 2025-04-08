@@ -18,7 +18,6 @@ public class ExitCommand implements Command {
         return "exit";
     }
 
-    //in order to be testable
     protected void exitApplication() {
         System.out.println("Exiting the application...");
         System.exit(0);

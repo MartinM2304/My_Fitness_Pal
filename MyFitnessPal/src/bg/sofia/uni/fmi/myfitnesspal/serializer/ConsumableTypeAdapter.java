@@ -29,7 +29,6 @@ public class ConsumableTypeAdapter
         JsonObject json = visitor.getResult();
         System.out.println("After visitor: " + json);
 
-        // Add consumptionLog for Food and Water
         if (src instanceof Food food) {
             JsonElement log = context.serialize(food.getConsumptionLog());
             json.add("consumptionLog", log);
@@ -124,7 +123,6 @@ public class ConsumableTypeAdapter
             foodIdsArray.forEach(foodId -> {
                 int id = foodId.getAsInt();
                 String foodKey = foodIds.get(id);
-                // Population happens in ItemSerializer
             });
         }
         return meal;

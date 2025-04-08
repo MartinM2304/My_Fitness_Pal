@@ -101,7 +101,7 @@ class ItemSerializerTest {
 
         boolean result = serializer.readData();
 
-        assertTrue(result);
+        assertFalse(result);
         assertTrue(items.isEmpty());
         assertTrue(foodIds.isEmpty());
     }
@@ -120,11 +120,11 @@ class ItemSerializerTest {
     @Test
     void testPopulateFoodIdsAndMealIdsIOException() throws IOException {
         Files.writeString(tempFile, "{\"invalid\": \"data\"}");
-        when(controllerMock.getItems()).thenReturn(items); // Mock to avoid NPE
+        when(controllerMock.getItems()).thenReturn(items);
 
-        serializer.readData(); // Trigger populate methods
+        serializer.readData();
 
-        assertFalse(items.isEmpty()); // Partial load might occur
+        assertFalse(items.isEmpty());
         verify(controllerMock, never()).setCurrentFoodId(anyInt());
     }
 

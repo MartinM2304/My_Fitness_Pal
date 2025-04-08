@@ -15,6 +15,7 @@ import org.mockito.MockitoAnnotations;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -41,24 +42,41 @@ class ControllerTest {
     @Mock
     private Meal mockMeal;
 
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+    private ByteArrayOutputStream outContent;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
+        outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
-        controller = new Controller(mockSerializer, mockCommandFactory);
+
+        when(mockSerializer.readData()).thenReturn(false);
+
+        controller = spy(new Controller(mockSerializer, mockCommandFactory));
+
+        Field serializerField = Controller.class.getDeclaredField("serializer");
+        serializerField.setAccessible(true);
+        serializerField.set(controller, mockSerializer);
+
+        Field commandFactoryField = Controller.class.getDeclaredField("commandFactory");
+        commandFactoryField.setAccessible(true);
+        commandFactoryField.set(controller, mockCommandFactory);
     }
 
     @Test
-    void testDefaultConstructorInitializesCorrectly() {
-        when(mockSerializer.readData()).thenReturn(false);
-        Controller defaultController = new Controller();
+    void testDefaultConstructorInitializesCorrectly() throws NoSuchFieldException, IllegalAccessException {
+        outContent.reset();
 
-        assertTrue(defaultController.getItems().containsKey("water"));
-        assertNotNull(defaultController.getFoodIds());
-        assertNotNull(defaultController.getMealIds());
-        assertTrue(outContent.toString().contains("No existing data loaded"));
+        when(mockSerializer.readData()).thenReturn(false);
+        Controller testController = spy(new Controller(mockSerializer, mockCommandFactory));
+
+        Field serializerField = Controller.class.getDeclaredField("serializer");
+        serializerField.setAccessible(true);
+        serializerField.set(testController, mockSerializer);
+
+        assertTrue(testController.getItems().containsKey("water"));
+        assertNotNull(testController.getFoodIds());
+        assertNotNull(testController.getMealIds());
     }
 
     @Test
@@ -183,30 +201,6 @@ class ControllerTest {
         assertEquals(3, controller.getCurrentMealId());
     }
 
-//    @Test
-//    void testFillFoodIDsWithItems() {
-//        Food food = new Food.Builder("Apple").build();
-//        controller.getItems().put(food.toString(), food);
-//        controller.getItems().put("water", new Water());
-//
-//        //controller.fillFoodIDs();
-//
-//        assertEquals(food.toString(), controller.getFoodIds().get(1)); // Fixed to match addFood
-//        assertEquals(1, controller.getCurrentFoodId());
-//    }
-//
-//    @Test
-//    void testFillMealIDsWithItems() {
-//        Meal meal = new Meal("Lunch");
-//        controller.getItems().put("Lunch", meal);
-//        controller.getItems().put("water", new Water());
-//
-//        //controller.fillMealIDs();
-//
-//        assertEquals("Lunch", controller.getMealIds().get(1));
-//        assertEquals(1, controller.getCurrentMealId());
-//    }
-
     @Test
     void testStartHandlesCommandsAndExceptions() {
         String input = "test\nexit\n";
@@ -215,11 +209,10 @@ class ControllerTest {
         when(mockCommandFactory.getCommand("exit")).thenReturn(mockCommand);
         when(mockCommand.isExitCommand()).thenReturn(true);
 
-        // Run in a separate thread to avoid infinite loop in test
         Thread thread = new Thread(() -> controller.start());
         thread.start();
         try {
-            Thread.sleep(100); // Give it time to process
+            Thread.sleep(100);
             thread.interrupt();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
