@@ -77,8 +77,8 @@ public class ItemSerializer {
 
                 if ("Food".equals(type)) {
                     int foodId = itemJson.get("foodId").getAsInt();
-                    String foodName = itemJson.get("name").getAsString();
-                    foodIds.put(foodId, foodName);
+                    //String foodName = itemJson.get("name").getAsString();
+                    foodIds.put(foodId, entry.getKey());
                     maxFoodId = Math.max(maxFoodId, foodId);
                 } else if ("Meal".equals(type)) {
                     String mealName = itemJson.get("name").getAsString();

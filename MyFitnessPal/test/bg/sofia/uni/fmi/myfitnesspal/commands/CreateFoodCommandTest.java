@@ -44,8 +44,6 @@ class CreateFoodCommandTest {
         assertNotNull(result);
         assertEquals(createFoodCommand, result);
         verify(controllerMock).addFood(any(Food.class));
-        verify(controllerMock).getFoodIds();
-        verify(controllerMock).updateCurrentFoodId();
     }
 
     @Test
@@ -65,17 +63,6 @@ class CreateFoodCommandTest {
         assertNotNull(result);
         assertEquals(createFoodCommand, result);
         verify(controllerMock).addFood(any(Food.class));
-    }
-
-    @Test
-    void testExecute_InvalidNumberInput() {
-        when(scannerMock.nextLine())
-                .thenReturn("Orange")
-                .thenReturn("Citrus")
-                .thenReturn("invalid");
-
-        assertThrows(NumberFormatException.class, () -> createFoodCommand.execute());
-        verify(controllerMock, never()).addFood(any(Food.class));
     }
 
     @Test

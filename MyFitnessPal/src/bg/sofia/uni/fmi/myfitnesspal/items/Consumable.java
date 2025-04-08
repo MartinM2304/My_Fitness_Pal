@@ -6,21 +6,27 @@ import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class Consumable implements Item, Serializable {
-    protected Map<LocalDate, List<ConsumptionEntry>> consumptionLog = new HashMap<>();
+    protected Map<LocalDate, List<ConsumptionEntry>> consumptionLog =
+            new HashMap<>();
 
-    private void validate(LocalDate date) {
-        if (date == null) {
+    private void validate(LocalDate date, Object... args) {
+        boolean hasNegative = Arrays.stream(args)
+                .filter(arg -> arg instanceof Number)
+                .map(arg ->((Number) arg).doubleValue())
+                .anyMatch(value -> value < 0);
+        if (date == null||hasNegative) {
             throw new IllegalArgumentException("date is null");
         }
     }
 
     public void consumpt(LocalDate date, Object... args) {
-        validate(date);
+        validate(date,args);
         ConsumptionEntry entry = createConsumptionEntry(args);
         consumptionLog.computeIfAbsent(date, k -> new ArrayList<>()).add(entry);
     }
@@ -33,15 +39,18 @@ public abstract class Consumable implements Item, Serializable {
 
     public int getConsumptionForDateSum(LocalDate date) {
         if (!consumptionLog.containsKey(date)) {
-            throw new IllegalArgumentException("you didnt consume any items then");
+            throw new IllegalArgumentException(
+                    "you didnt consume any items then");
         }
         List<ConsumptionEntry> consumptionDate = consumptionLog.get(date);
-        return consumptionDate.stream().mapToInt(ConsumptionEntry::getQuantity).sum();
+        return consumptionDate.stream().mapToInt(ConsumptionEntry::getQuantity)
+                .sum();
     }
 
     public List<ConsumptionEntry> getConsumptionForDate(LocalDate date) {
         if (!consumptionLog.containsKey(date)) {
-            throw new IllegalArgumentException("you didnt consume any items then");
+            throw new IllegalArgumentException(
+                    "you didnt consume any items then");
         }
         return consumptionLog.get(date);
     }

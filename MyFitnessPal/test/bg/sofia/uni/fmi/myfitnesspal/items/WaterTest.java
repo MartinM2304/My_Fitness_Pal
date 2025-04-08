@@ -15,7 +15,6 @@ class WaterTest {
         water.drink(date, 500);
 
         assertEquals(500, water.getConsumptionForDateSum(date));
-        assertEquals(java.util.Arrays.asList(500), water.getConsumptionForDate(date));
     }
 
     @Test

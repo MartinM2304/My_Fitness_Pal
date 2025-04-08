@@ -21,7 +21,7 @@ public class JsonItemVisitor implements ItemVisitor {
     public void visitFood(Food food) {
         result = new JsonObject();
         int foodId = foodIds.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(food.getName()))
+                .filter(entry -> entry.getValue().equals(food.toString()))
                 .map(Map.Entry::getKey)
                 .findFirst()
                 .orElse(-1);

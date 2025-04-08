@@ -62,9 +62,7 @@ public class Controller {
     public void addFood(Food food) {
         items.put(food.toString(), food);
         int newFoodId = updateCurrentFoodId();
-        foodIds.put(newFoodId, food.getName());
-        System.out.println(
-                "Added food with ID: " + newFoodId + " -> " + food.getName());
+        foodIds.put(newFoodId, food.toString());
     }
 
     public void addMeal(Meal menu) {

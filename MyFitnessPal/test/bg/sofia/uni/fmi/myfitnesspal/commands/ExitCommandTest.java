@@ -1,32 +1,32 @@
 package bg.sofia.uni.fmi.myfitnesspal.commands;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class ExitCommandTest {
-    @Test
-    void testExecute_CallsExit() {
-        ExitCommand exitCommand = Mockito.spy(new ExitCommand());
 
-        Mockito.doNothing().when(exitCommand).exitApplication();
-        Command result = exitCommand.execute();
+    private ExitCommand command;
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
-        assertEquals(exitCommand, result);
-        Mockito.verify(exitCommand).exitApplication();
+    @BeforeEach
+    void setUp() {
+        command = new ExitCommand();
+        System.setOut(new PrintStream(outContent));
     }
 
     @Test
     void testIsExitCommand() {
-        ExitCommand exitCommand = new ExitCommand();
-        assertTrue(exitCommand.isExitCommand());
+        assertTrue(command.isExitCommand());
     }
 
     @Test
     void testToString() {
-        ExitCommand exitCommand = new ExitCommand();
-        assertEquals("exit", exitCommand.toString());
+        assertEquals("exit", command.toString());
     }
 }

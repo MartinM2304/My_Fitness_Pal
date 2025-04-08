@@ -4,6 +4,7 @@ import bg.sofia.uni.fmi.myfitnesspal.commands.Command;
 import bg.sofia.uni.fmi.myfitnesspal.commands.CommandFactory;
 import bg.sofia.uni.fmi.myfitnesspal.items.Consumable;
 import bg.sofia.uni.fmi.myfitnesspal.items.Food;
+import bg.sofia.uni.fmi.myfitnesspal.items.Meal;
 import bg.sofia.uni.fmi.myfitnesspal.items.Water;
 import bg.sofia.uni.fmi.myfitnesspal.serializer.ItemSerializer;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -36,25 +39,26 @@ class ControllerTest {
     private Food mockFood;
 
     @Mock
-    private Scanner mockScanner;
+    private Meal mockMeal;
+
+    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        System.setOut(new PrintStream(outContent));
         controller = new Controller(mockSerializer, mockCommandFactory);
     }
 
     @Test
     void testDefaultConstructorInitializesCorrectly() {
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-
         when(mockSerializer.readData()).thenReturn(false);
         Controller defaultController = new Controller();
 
         assertTrue(defaultController.getItems().containsKey("water"));
         assertNotNull(defaultController.getFoodIds());
-        assertEquals(0, defaultController.getCurrentFoodId());
+        assertNotNull(defaultController.getMealIds());
+        assertTrue(outContent.toString().contains("No existing data loaded"));
     }
 
     @Test
@@ -92,14 +96,27 @@ class ControllerTest {
     }
 
     @Test
-    void testAddFoodAddsToItems() {
-        when(mockFood.toString()).thenReturn("apple");
+    void testAddFoodUpdatesItemsAndFoodIds() {
+        when(mockFood.toString()).thenReturn("apple (100g; 52 kcal; 0.0g, 0.0g, 0.00g)");
 
         controller.addFood(mockFood);
 
-        Map<String, Consumable> items = controller.getItems();
-        assertTrue(items.containsKey("apple"));
-        assertEquals(mockFood, items.get("apple"));
+        assertTrue(controller.getItems().containsKey("apple (100g; 52 kcal; 0.0g, 0.0g, 0.00g)"));
+        assertEquals(mockFood, controller.getItems().get("apple (100g; 52 kcal; 0.0g, 0.0g, 0.00g)"));
+        assertEquals("apple (100g; 52 kcal; 0.0g, 0.0g, 0.00g)", controller.getFoodIds().get(1));
+        assertEquals(1, controller.getCurrentFoodId());
+    }
+
+    @Test
+    void testAddMealUpdatesItemsAndMealIds() {
+        when(mockMeal.getName()).thenReturn("Breakfast");
+
+        controller.addMeal(mockMeal);
+
+        assertTrue(controller.getItems().containsKey("Breakfast"));
+        assertEquals(mockMeal, controller.getItems().get("Breakfast"));
+        assertEquals("Breakfast", controller.getMealIds().get(1));
+        assertEquals(1, controller.getCurrentMealId());
     }
 
     @Test
@@ -118,12 +135,24 @@ class ControllerTest {
     }
 
     @Test
+    void testGetMealIdsReturnsCorrectMap() {
+        Map<Integer, String> mealIds = controller.getMealIds();
+        assertNotNull(mealIds);
+        assertTrue(mealIds.isEmpty());
+    }
+
+    @Test
     void testGetCurrentFoodIdInitialValue() {
         assertEquals(0, controller.getCurrentFoodId());
     }
 
     @Test
-    void testUpdateCurrentFoodIdIncrementsCorrectly() {
+    void testGetCurrentMealIdInitialValue() {
+        assertEquals(0, controller.getCurrentMealId());
+    }
+
+    @Test
+    void testUpdateCurrentFoodIdNoArgIncrementsCorrectly() {
         int newId = controller.updateCurrentFoodId();
         assertEquals(1, newId);
         assertEquals(1, controller.getCurrentFoodId());
@@ -134,27 +163,70 @@ class ControllerTest {
     }
 
     @Test
-    void testUpdateCurrentFoodIdWithParameterSetsCorrectly() {
+    void testUpdateCurrentFoodIdWithArgSetsCorrectly() {
         int newId = controller.updateCurrentFoodId(5);
         assertEquals(5, newId);
         assertEquals(5, controller.getCurrentFoodId());
+    }
 
-        newId = controller.updateCurrentFoodId(10);
+    @Test
+    void testSetCurrentFoodIdSetsCorrectly() {
+        int newId = controller.setCurrentFoodId(10);
         assertEquals(10, newId);
         assertEquals(10, controller.getCurrentFoodId());
     }
 
     @Test
-    void testInitControllerWithNoExistingData() {
-        when(mockSerializer.readData()).thenReturn(false);
-        controller = new Controller(mockSerializer, mockCommandFactory);
-        assertTrue(controller.getItems().containsKey("water"));
+    void testSetCurrentMealIdSetsCorrectly() {
+        int newId = controller.setCurrentMealId(3);
+        assertEquals(3, newId);
+        assertEquals(3, controller.getCurrentMealId());
     }
 
+//    @Test
+//    void testFillFoodIDsWithItems() {
+//        Food food = new Food.Builder("Apple").build();
+//        controller.getItems().put(food.toString(), food);
+//        controller.getItems().put("water", new Water());
+//
+//        //controller.fillFoodIDs();
+//
+//        assertEquals(food.toString(), controller.getFoodIds().get(1)); // Fixed to match addFood
+//        assertEquals(1, controller.getCurrentFoodId());
+//    }
+//
+//    @Test
+//    void testFillMealIDsWithItems() {
+//        Meal meal = new Meal("Lunch");
+//        controller.getItems().put("Lunch", meal);
+//        controller.getItems().put("water", new Water());
+//
+//        //controller.fillMealIDs();
+//
+//        assertEquals("Lunch", controller.getMealIds().get(1));
+//        assertEquals(1, controller.getCurrentMealId());
+//    }
+
     @Test
-    void testInitControllerWithExistingData() {
-        when(mockSerializer.readData()).thenReturn(true);
-        controller = new Controller(mockSerializer, mockCommandFactory);
-        assertTrue(controller.getItems().containsKey("water"));
+    void testStartHandlesCommandsAndExceptions() {
+        String input = "test\nexit\n";
+        System.setIn(new ByteArrayInputStream(input.getBytes()));
+        when(mockCommandFactory.getCommand("test")).thenThrow(new IllegalArgumentException("Invalid"));
+        when(mockCommandFactory.getCommand("exit")).thenReturn(mockCommand);
+        when(mockCommand.isExitCommand()).thenReturn(true);
+
+        // Run in a separate thread to avoid infinite loop in test
+        Thread thread = new Thread(() -> controller.start());
+        thread.start();
+        try {
+            Thread.sleep(100); // Give it time to process
+            thread.interrupt();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        assertTrue(outContent.toString().contains("> "));
+        assertTrue(outContent.toString().contains("wrong command try another"));
+        verify(mockSerializer).saveData();
     }
 }

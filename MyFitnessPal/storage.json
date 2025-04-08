@@ -10,7 +10,16 @@
     "carbs": 1.0,
     "fat": 1.0,
     "protein": 1.0,
-    "consumptionLog": {}
+    "consumptionLog": {
+      "1111-11-11": [
+        {
+          "quantity": 1,
+          "type": "FoodConsumption",
+          "servings": 1,
+          "mealTime": "BREAKFAST"
+        }
+      ]
+    }
   },
   "boza (1g; 1 kcal; 1.0g, 1.0g, 1.00g)": {
     "type": "Food",

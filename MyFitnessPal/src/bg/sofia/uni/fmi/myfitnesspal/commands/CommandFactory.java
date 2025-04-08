@@ -13,17 +13,20 @@ public class CommandFactory {
     private final Controller controller;
     private final CommandValidator commandValidator;
 
-    public CommandFactory(Map<String, Consumable> items, Scanner scanner, Controller controller) {
+    public CommandFactory(Map<String, Consumable> items, Scanner scanner,
+                          Controller controller) {
         this.controller = controller;
 
-        Command drinkWater = new DrinkWaterCommand((Water) items.get("water"), scanner);
-        Command checkWater = new CheckWaterCommand((Water) items.get("water"), scanner);
+        Command drinkWater =
+                new DrinkWaterCommand((Water) items.get("water"), scanner);
+        Command checkWater =
+                new CheckWaterCommand((Water) items.get("water"), scanner);
         Command createMenu = new CreateMealCommand(controller, scanner);
         Command consumeMeal = new ConsumeMealCommand(controller, scanner);
         Command createFood = new CreateFoodCommand(scanner, controller);
         Command viewAllFood = new ViewAllFoodsCommand(controller);
         Command logFood = new LogFoodCommand(controller, scanner);
-        Command viewAllLogged = new ViewAllLoggedCommand(controller,scanner);
+        Command viewAllLogged = new ViewAllLoggedCommand(controller, scanner);
         Command exit = new ExitCommand();
 
         commands.put(drinkWater.toString(), drinkWater);
@@ -33,7 +36,7 @@ public class CommandFactory {
         commands.put(logFood.toString(), logFood);
         commands.put(createMenu.toString(), createMenu);
         commands.put(consumeMeal.toString(), consumeMeal);
-        commands.put(viewAllLogged.toString(),viewAllLogged);
+        commands.put(viewAllLogged.toString(), viewAllLogged);
         commands.put(exit.toString(), exit);
 
         commandValidator = new CommandValidator(commands.keySet());
